@@ -5,7 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
 
-from backend.app.utils.database import get_db
+from utils.database import get_db
+from utils.generator_jwt import create_access_token
 from models.users import Users
 from models.roles import Roles 
 
@@ -59,10 +60,12 @@ async def auth_user(auth_data: dict, db: Session = Depends(get_db)):
             detail="Невірний email або пароль"
         )
 
-    access_token =
+    access_token = create_access_token(
+        data={"sub": str(user.id), "role": user.role_id}
+    )
 
     return JSONResponse(status_code=status.HTTP_200_OK, content={
         "status": "success", 
-        "access_token": access_token
-        "message": "Ви успішно увійшли",
+        "access_token": access_token,
+        "message": "Ви успішно увійшли"
     })
