@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
