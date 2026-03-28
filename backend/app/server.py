@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from routers import auth, manager, order, profile, team
+
 app = FastAPI()
 
 app.add_middleware(
@@ -12,3 +14,8 @@ app.add_middleware(
 )
 
 
+app.include_router(auth.router)
+app.include_router(manager.router)
+app.include_router(order.router)
+app.include_router(profile.router)
+app.include_router(team.router)

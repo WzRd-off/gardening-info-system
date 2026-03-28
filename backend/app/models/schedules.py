@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from app.database import Base
+from backend.app.utils.database import Base
 
-class Schedule(Base):
+class Schedules(Base):
     __tablename__ = "schedule"
     id = Column(Integer, primary_key=True, index=True)
     scheduled_time = Column(DateTime, nullable=False) 

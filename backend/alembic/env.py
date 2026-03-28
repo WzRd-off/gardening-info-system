@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from alembic import context
 
-from app.database import Base
+from backend.app.utils.database import Base
 from app.models.gardenplots import GardenPlots
 from app.models.orders import Orders
 from app.models.orderstatus import OrderStatus

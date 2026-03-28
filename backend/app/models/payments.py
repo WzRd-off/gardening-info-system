@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Numeric
-from app.database import Base
+from backend.app.utils.database import Base
 from datetime import datetime, timezone
 
-class Payment(Base):
+class Payments(Base):
     __tablename__ = "payments"
     id = Column(Integer, primary_key=True, index=True)
     amount = Column(Numeric(10, 2), nullable=False)

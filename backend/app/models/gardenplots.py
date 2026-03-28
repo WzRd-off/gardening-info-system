@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from app.database import Base
+from backend.app.utils.database import Base
 
 class GardenPlots(Base):
     __tablename__ = "garden_plots"
