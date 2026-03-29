@@ -88,7 +88,7 @@ async def update_service(
                 os.remove(old_file_path)
 
         # Зберігаємо новий файл
-        temp_dir = Path('static/services')
+        temp_dir = Path('image/services')
         temp_dir.mkdir(parents=True, exist_ok=True)
         
         file_extension = Path(upload_file.filename).suffix
@@ -98,7 +98,7 @@ async def update_service(
         with file_path.open('wb') as buffer:
             shutil.copyfileobj(upload_file.file, buffer)
         
-        service.image_url = f"/static/services/{unique_filename}"
+        service.image_url = f"/image/services/{unique_filename}"
 
     if name is not None:
         service.name = name

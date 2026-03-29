@@ -10,7 +10,9 @@ class Users(Base):
     password_hash = Column(String, nullable=False)
     phone = Column(String)
     role_id = Column(Integer, ForeignKey("roles.id"))
-    
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
+
+    team = relationship("Teams", back_populates="members", foreign_keys=[team_id])  
     role = relationship("Roles", back_populates="users")
     plots = relationship("GardenPlots", back_populates="owner")
     orders = relationship("Orders", back_populates="client")
