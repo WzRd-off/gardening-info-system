@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.app.utils.database import Base
+from app.utils.database import Base
 
 class GardenPlots(Base):
     __tablename__ = "garden_plots"
@@ -10,6 +10,6 @@ class GardenPlots(Base):
     features = Column(Text) 
     user_id = Column(Integer, ForeignKey("users.id"))
     
-    owner = relationship("User", back_populates="plots")
-    plants = relationship("Plant", back_populates="plot")
-    orders = relationship("Order", back_populates="plot")
+    owner = relationship("Users", back_populates="plots")
+    plants = relationship("Plants", back_populates="plot")
+    orders = relationship("Orders", back_populates="plot")

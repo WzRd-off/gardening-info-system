@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, Date, Numeric
 from sqlalchemy.orm import relationship
-from backend.app.utils.database import Base
+from app.utils.database import Base
 
 class Orders(Base):
     __tablename__ = "orders"
@@ -16,7 +16,7 @@ class Orders(Base):
     status_id = Column(Integer, ForeignKey("order_statuses.id"))
     team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
     
-    client = relationship("User", back_populates="orders")
-    plot = relationship("GardenPlot", back_populates="orders")
-    service = relationship("Service", back_populates="orders")
-    team = relationship("Team", back_populates="orders")
+    client = relationship("Users", back_populates="orders")
+    plot = relationship("GardenPlots", back_populates="orders")
+    service = relationship("Services", back_populates="orders")
+    team = relationship("Teams", back_populates="orders")

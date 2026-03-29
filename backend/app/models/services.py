@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, Numeric
 from sqlalchemy.orm import relationship
-from backend.app.utils.database import Base
+from app.utils.database import Base
 
 class Services(Base):
     __tablename__ = "services"
@@ -10,4 +10,4 @@ class Services(Base):
     price = Column(Numeric(10, 2))
     image_url = Column(String)
     
-    orders = relationship("Order", back_populates="service")
+    orders = relationship("Orders", back_populates="service")

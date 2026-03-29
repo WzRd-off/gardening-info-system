@@ -5,10 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from passlib.hash import bcrypt
 
-from utils.database import get_db
-from utils.generator_jwt import create_access_token
-from models.users import Users
-from models.roles import Roles 
+from app.utils.database import get_db
+from app.utils.generator_jwt import create_access_token
+from app.models.users import Users
+from app.models.roles import Roles 
 
 router = APIRouter(prefix='/auth', tags=['Authentication'])
 

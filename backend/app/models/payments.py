@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Numeric
-from backend.app.utils.database import Base
+from app.utils.database import Base
 from datetime import datetime, timezone
 
 class Payments(Base):

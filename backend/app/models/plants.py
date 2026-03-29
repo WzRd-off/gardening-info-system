@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.app.utils.database import Base
+from app.utils.database import Base
 
 class Plants(Base):
     __tablename__ = "plants"
@@ -9,4 +9,4 @@ class Plants(Base):
     description = Column(Text)
     plot_id = Column(Integer, ForeignKey("garden_plots.id"))
     
-    plot = relationship("GardenPlot", back_populates="plants")
+    plot = relationship("GardenPlots", back_populates="plants")

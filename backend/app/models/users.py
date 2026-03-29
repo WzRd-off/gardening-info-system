@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.app.utils.database import Base
+from app.utils.database import Base
 
 class Users(Base):
     __tablename__ = "users"
@@ -11,6 +11,6 @@ class Users(Base):
     phone = Column(String)
     role_id = Column(Integer, ForeignKey("roles.id"))
     
-    role = relationship("Role", back_populates="users")
-    plots = relationship("GardenPlot", back_populates="owner")
-    orders = relationship("Order", back_populates="client")
+    role = relationship("Roles", back_populates="users")
+    plots = relationship("GardenPlots", back_populates="owner")
+    orders = relationship("Orders", back_populates="client")
