@@ -12,6 +12,8 @@ from app.models.roles import Roles
 
 router = APIRouter(prefix='/auth', tags=['Authentication'])
 
+# Реєстрація нового користувача
+
 @router.post('/reg')
 async def reg_user(user_data: dict, db: Session = Depends(get_db)):
     # Чи існує юзер
@@ -47,6 +49,8 @@ async def reg_user(user_data: dict, db: Session = Depends(get_db)):
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={
         'stasus': 'success', 'message': 'Користувача успішно зареєстровано'
     })
+
+# Авторизація користувача
 
 @router.post('/login')
 async def auth_user(auth_data: dict, db: Session = Depends(get_db)):

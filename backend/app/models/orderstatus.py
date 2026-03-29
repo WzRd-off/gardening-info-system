@@ -5,4 +5,4 @@ from app.utils.database import Base
 class OrderStatus(Base):
     __tablename__ = "order_statuses"
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, UNIQUE=True, nullable=False) # Створено, в роботі, виконано
+    name = Column(String, unique=True, nullable=False) # Створено, в роботі, виконано
