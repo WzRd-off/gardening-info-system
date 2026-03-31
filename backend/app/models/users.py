@@ -10,7 +10,7 @@ class Users(Base):
     password_hash = Column(String, nullable=False)
     phone = Column(String)
     role_id = Column(Integer, ForeignKey("roles.id"))
-    team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
+    team_id = Column(Integer, ForeignKey("teams.id", use_alter=True, name="fk_users_teams"), nullable=True)
 
     team = relationship("Teams", back_populates="members", foreign_keys=[team_id])  
     role = relationship("Roles", back_populates="users")

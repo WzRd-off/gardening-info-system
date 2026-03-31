@@ -1,23 +1,28 @@
-from pydantic import BaseModel, ConfigDict
-from datetime import date
-from decimal import Decimal
+from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 
 class OrderBase(BaseModel):
-    execution_date: date
-    regularity: Optional[str] = "разово"
-    comment: Optional[str] = None
     plot_id: int
     service_id: int
+    comment: Optional[str] = None
 
 class OrderCreate(OrderBase):
     pass
 
-class OrderRead(OrderBase):
-    id: int
-    total_price: Decimal
-    user_id: int
-    status_id: int
+class OrderUpdate(BaseModel):
     team_id: Optional[int] = None
+    status_id: Optional[int] = None
+    manager_instructions: Optional[str] = None
 
-    model_config = ConfigDict(from_attributes=True)
+class OrderOut(OrderBase):
+    id: int
+    user_id: int
+    team_id: Optional[int] = None
+    status_id: int
+    manager_instructions: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+        from_attributes = True

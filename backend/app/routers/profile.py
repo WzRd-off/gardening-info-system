@@ -9,10 +9,11 @@ from app.utils.security import get_current_user
 from app.schemas.users import UserRead, UserUpdate, PasswordUpdate
 from app.schemas.gardenplots import GardenPlotCreate, GardenPlotRead
 from app.schemas.orders import OrderRead
+from app.schemas.plants import PlantCreate, PlantOut
 from app.models.users import Users
 from app.models.gardenplots import GardenPlots
 from app.models.orders import Orders
-
+from app.models.plants import Plants
 router = APIRouter(prefix="/profile", tags=["Profile"])
 
 # Отримання профілю поточного користувача
@@ -171,3 +172,55 @@ async def get_plots_history(db: Session = Depends(get_db),
                             current_user: Users = Depends(get_current_user)):
     stmt = select(Orders).where(Orders.user_id == current_user.id and (Orders.status_id == 4 or Orders.status_id == 5))
     return db.execute(stmt).scalars().all()
+
+@router.post("/my_plots/{plot_id}/plants", response_model=PlantOut, status_code=status.HTTP_201_CREATED)
+def add_plant_to_plot(plot_id: int, plant: PlantCreate, db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
+    """
+    Додавання рослини на конкретну ділянку клієнта.
+    Перевіряє, чи існує ділянка і чи належить вона саме цьому авторизованому клієнту.
+    """
+    # Перевірка безпеки: шукаємо ділянку, яка належить поточному користувачу
+    plot = db.query(GardenPlots).filter(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id).first()
+    if not plot:
+        raise HTTPException(status_code=404, detail="Ділянку не знайдено або у вас немає до неї доступу")
+    
+    new_plant = Plants(
+        name=plant.name,
+        description=plant.description,
+        plot_id=plot_id
+    )
+    db.add(new_plant)
+    db.commit()
+    db.refresh(new_plant)
+    return new_plant
+
+@router.get("/my_plots/{plot_id}/plants", response_model=list[PlantOut])
+def get_plants_on_plot(plot_id: int, db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
+    """
+    Отримання списку всіх рослин на конкретній ділянці клієнта.
+    """
+    plot = db.query(GardenPlots).filter(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id).first()
+    if not plot:
+        raise HTTPException(status_code=404, detail="Ділянку не знайдено або у вас немає до неї доступу")
+        
+    plants = db.query(Plants).filter(Plants.plot_id == plot_id).all()
+    return plants
+
+@router.delete("/my_plots/{plot_id}/plants/{plant_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_plant_from_plot(plot_id: int, plant_id: int, db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
+    """
+    Видалення рослини з ділянки.
+    """
+    plot = db.query(GardenPlots).filter(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id).first()
+    if not plot:
+        raise HTTPException(status_code=404, detail="Ділянку не знайдено або у вас немає до неї доступу")
+        
+    plant = db.query(Plants).filter(Plants.id == plant_id, Plants.plot_id == plot_id).first()
+    if not plant:
+        raise HTTPException(status_code=404, detail="Рослину не знайдено на цій ділянці")
+        
+    db.delete(plant)
+    db.commit()
+    return JSONResponse(status_code=204, content={
+        'status': 'success', 'message': 'Рослина успішно видалена з ділянки'
+    })
