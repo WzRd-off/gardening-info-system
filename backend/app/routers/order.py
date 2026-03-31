@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.utils.database import get_db
 from app.utils.security import get_current_user
 from app.models.orders import Orders
+from app.models.orderstatus import OrderStatus
 from app.models.users import Users
 from app.models.services import Services
 from app.schemas.orders import OrderCreate, OrderRead
@@ -153,3 +154,24 @@ async def update_order_status(order_id: int, status_id: int, db: Session = Depen
         'status': 'success', 'message': 'Статус замовлення успішно оновлено'
     })
 
+# Отримання статусу виконання замовлення поточного користувача
+
+@router.get('/order_status/{order_id}')
+async def get_order_status(order_id: int, 
+                           db: Session = Depends(get_db),
+                           current_user: Users = Depends(get_current_user)
+):
+    
+    order_stmt = select(Orders).where(Orders.id == order_id and Orders.user_id == current_user.id)
+    existing_order = db.execute(order_stmt).scalar_one_or_none()
+
+    if not existing_order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail=f"Замовлення з ID {order_id} не знайдено у вашому профілі")
+    
+    status_stmt = select(OrderStatus).where(OrderStatus.id == existing_order.status_id)
+    order_status = db.execute(status_stmt).scalar_one_or_none()
+
+    return JSONResponse(status_code=status.HTTP_200_OK, content={
+        'status': 'success', 'order_status_name': order_status.name
+    })

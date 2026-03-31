@@ -7,7 +7,11 @@ from passlib.hash import bcrypt
 from app.utils.database import get_db
 from app.utils.security import get_current_user
 from app.schemas.users import UserRead, UserUpdate, PasswordUpdate
+from app.schemas.gardenplots import GardenPlotCreate, GardenPlotRead
+from app.schemas.orders import OrderRead
 from app.models.users import Users
+from app.models.gardenplots import GardenPlots
+from app.models.orders import Orders
 
 router = APIRouter(prefix="/profile", tags=["Profile"])
 
@@ -68,3 +72,102 @@ async def change_password(
     db.refresh(current_user)
 
     return {"status": "success", "message": "Пароль успішно змінено"}
+
+# Додавання ділянок до профілю користувача
+
+@router.post('/add_plot')
+async def add_plot(plot_data: GardenPlotCreate, 
+                   db: Session = Depends(get_db),
+                   current_user: Users = Depends(get_current_user)
+):
+    
+    stmt = select(GardenPlots).where(GardenPlots.address == plot_data.address and GardenPlots.user_id == current_user.id)
+    existing_plot = db.execute(stmt).scalars().first()
+
+    if existing_plot:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Ділянка з такою адресою вже існує у вашому профілі"
+                            )
+
+    new_plot = GardenPlots(
+        address=plot_data.address,
+        area=plot_data.area,
+        features=plot_data.features,
+        user_id=current_user.id
+        )
+    
+    db.add(new_plot)
+    db.commit()
+    db.refresh(new_plot)
+
+    return JSONResponse(status_code=201, content={
+        'status': 'success',
+        'message': 'Ділянка успішно додана до профілю'
+    })
+    
+# Отримання ділянок поточного користувача
+
+@router.get('/my_plots', response_model=list[GardenPlotRead])
+async def get_my_plots(db: Session = Depends(get_db), 
+                       current_user: Users = Depends(get_current_user)):
+    stmt = select(GardenPlots).where(GardenPlots.user_id == current_user.id)
+    return db.execute(stmt).scalars().all()
+
+# Редагування ділянок
+
+@router.put('/edit_plot/{plot_id}')
+async def edit_plot(plot_id: int, 
+                    plot_data: GardenPlotCreate, 
+                    db: Session = Depends(get_db), 
+                    current_user: Users = Depends(get_current_user)):
+    
+    stmt = select(GardenPlots).where(GardenPlots.id == plot_id and GardenPlots.user_id == current_user.id)
+    plot = db.execute(stmt).scalars().first()
+
+    if not plot:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Ділянка не знайдена у вашому профілі"
+                            )
+
+    plot.address = plot_data.address
+    plot.area = plot_data.area
+    plot.features = plot_data.features
+
+    db.commit()
+    db.refresh(plot)
+
+    return JSONResponse(status_code=200, content={
+        'status': 'success',
+        'message': 'Ділянка успішно оновлена'
+    })
+
+# Видалення ділянок
+
+@router.delete('/delete_plot/{plot_id}')
+async def delete_plot(plot_id: int, 
+                      db: Session = Depends(get_db),
+                      current_user: Users = Depends(get_current_user)
+):
+    stmt = select(GardenPlots).where(GardenPlots.id == plot_id and GardenPlots.user_id == current_user.id)
+    plot = db.execute(stmt).scalars().first()
+
+    if not plot:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Ділянка не знайдена у вашому профілі"
+                            )
+
+    db.delete(plot)
+    db.commit()
+
+    return JSONResponse(status_code=200, content={
+        'status': 'success',
+        'message': 'Ділянка успішно видалена з профілю'
+    })
+
+# Отримання історії обслуговування ділянок поточного користувача
+
+@router.get('/plots_history', response_model=list[OrderRead])
+async def get_plots_history(db: Session = Depends(get_db), 
+                            current_user: Users = Depends(get_current_user)):
+    stmt = select(Orders).where(Orders.user_id == current_user.id and (Orders.status_id == 4 or Orders.status_id == 5))
+    return db.execute(stmt).scalars().all()

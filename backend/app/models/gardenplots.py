@@ -11,5 +11,5 @@ class GardenPlots(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     
     owner = relationship("Users", back_populates="plots")
-    plants = relationship("Plants", back_populates="plot")
-    orders = relationship("Orders", back_populates="plot")
+    plants = relationship("Plants", back_populates="plots")
+    orders = relationship("Orders", back_populates="plots")

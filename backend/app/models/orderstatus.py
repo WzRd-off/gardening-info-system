@@ -4,5 +4,5 @@ from app.utils.database import Base
 
 class OrderStatus(Base):
     __tablename__ = "order_statuses"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, nullable=False) # Створено, в роботі, виконано
+    id = Column(Integer, primary_key=True, index=True) # 1, 2, 3, 4, 5
+    name = Column(String, unique=True, nullable=False) # отримано, в дорозі, в роботі, виконано, проблема виконання
