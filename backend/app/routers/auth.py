@@ -7,6 +7,7 @@ from passlib.hash import bcrypt
 
 from app.utils.database import get_db
 from app.utils.generator_jwt import create_access_token
+from app.schemas.users import UserCreate, UserLogin
 from app.models.users import Users
 from app.models.roles import Roles 
 
@@ -14,9 +15,9 @@ router = APIRouter(prefix='/auth', tags=['Authentication'])
 
 # Реєстрація нового користувача
 @router.post('/reg')
-async def reg_user(user_data: dict, db: Session = Depends(get_db)):
+async def reg_user(user_data: UserCreate, db: Session = Depends(get_db)):
     # Чи існує юзер
-    stmt = select(Users).where(Users.email == user_data.get('email'))
+    stmt = select(Users).where(Users.email == user_data.email)
     existing_user = db.execute(stmt).scalars().first()
 
     if existing_user:
@@ -26,15 +27,15 @@ async def reg_user(user_data: dict, db: Session = Depends(get_db)):
     role = db.execute(stmt_role).scalars().first()
 
     if not role:
-        raise HTTPException(status_code=500, detail="Роль 'Клієнт' не знайдена в системі")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Роль 'Клієнт' не знайдена в системі")
 
-    hashed_password = bcrypt.hash(user_data.get('password'))
+    hashed_password = bcrypt.hash(user_data.password)
 
     new_user = Users(
-        username=user_data.get('username'),
-        email=user_data.get('email'),
+        username=user_data.username,
+        email=user_data.email,
         password_hash=hashed_password,
-        phone=user_data.get('phone'),
+        phone=user_data.phone,
         role_id=role.id
     )
 
@@ -48,12 +49,12 @@ async def reg_user(user_data: dict, db: Session = Depends(get_db)):
 
 # Авторизація користувача
 @router.post('/login')
-async def auth_user(auth_data: dict, db: Session = Depends(get_db)):
+async def auth_user(auth_data: UserLogin, db: Session = Depends(get_db)):
     # Пошук юзера
-    stmt = select(Users).where(Users.email == auth_data.get('email'))
+    stmt = select(Users).where(Users.email == auth_data.email)
     user = db.execute(stmt).scalars().first()
 
-    if not user or not bcrypt.verify(auth_data.get('password'), user.password_hash):
+    if not user or not bcrypt.verify(auth_data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Невірний email або пароль")
 
     access_token = create_access_token(data={"sub": str(user.id), "role": user.role_id})

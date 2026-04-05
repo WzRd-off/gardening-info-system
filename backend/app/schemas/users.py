@@ -15,11 +15,19 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
 
-class UserCreate(UserBase):
-    password: str
 
 class UserRead(UserBase):
     id: int
     role_id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserCreate(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    phone: Optional[str] = None
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str

@@ -1,8 +1,11 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from jose import jwt, JWTError
+
 from app.utils.database import get_db
-from app.utils.generator_jwt import create_access_token
+# Імпортуємо константи для розшифровки токена
+from app.utils.generator_jwt import SECRET_KEY, ALGORITHM
 from app.models.users import Users
 from app.models.roles import Roles
 
@@ -11,13 +14,24 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Не вдалося перевірити облікові дані",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    token_data = create_access_token(token, credentials_exception)
-    user = db.query(Users).filter(Users.email == token_data.email).first()
+    
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+        
+    user = db.query(Users).filter(Users.id == int(user_id)).first()
+    
     if user is None:
         raise credentials_exception
+        
     return user
 
 def get_current_manager(current_user: Users = Depends(get_current_user), db: Session = Depends(get_db)):
