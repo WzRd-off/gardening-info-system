@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
@@ -6,79 +8,80 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [username, setName] = useState(''); 
+  const [username, setUsername] = useState(''); 
   const [phone, setPhone] = useState('');
   
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Очистка ошибок при смене таба
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setErrorMessage('');
   };
 
-  // Обработчик отправки формы
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
     try {
       if (activeTab === 'login') {
-        const formData = new URLSearchParams();
-        formData.append('username', email); // В доках указано, что логин идет как username (email)
-        formData.append('password', password);
-
         const response = await fetch('/auth/login', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json ; charset=utf-8',
           },
-          body: formData,
+          body: JSON.stringify({
+            email: email,
+            password: password
+          }),
         });
 
         const data = await response.json();
         
         if (response.ok) {      
             localStorage.setItem('jwt', data.access_token);
+            window.location.href = '/'; 
         } else {
-          setErrorMessage(data.detail || 'Помилка авторизації');
+            setErrorMessage(data.detail || 'Помилка авторизації');
         }
-        
       } else {
-        // Валидация совпадения паролей
         if (password !== confirmPassword) {
-          setErrorMessage('Паролі не співпадають');
-          return;
+            setErrorMessage('Паролі не співпадають');
+            return;
         }
 
-        // Регистрация: обычный JSON
         const response = await fetch('/auth/reg', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username, email, password, phone }),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+            },
+            body: JSON.stringify({
+                username: username,
+                email: email,
+                password: password,
+                phone: phone
+            }),
         });
-        
+
         const data = await response.json();
 
         if (response.ok) {
-          console.log('Успішна реєстрація!', data);
-          setActiveTab('login');
+            alert('Реєстрація успішна! Тепер ви можете увійти.');
+            handleTabChange('login'); 
         } else {
-          setErrorMessage(data.detail || 'Помилка реєстрації');
+            setErrorMessage(data.detail || 'Помилка реєстрації');
         }
       }
     } catch (error) {
-      console.error('Помилка при відправці запиту:', error);
+        setErrorMessage('Помилка з\'єднання з сервером');
     }
   };
 
   return (
+    <>
+    <Header />
     <div className="auth-container">
         <div className="auth-card">
         
-            {/* AuthTabs */}
             <div className="auth-tabs">
                 <div 
                 className={`auth-tab ${activeTab === 'login' ? 'active' : ''}`}
@@ -94,13 +97,10 @@ export default function AuthPage() {
                 </div>
             </div>
 
-            {/* Вывод ошибки */}
             {errorMessage && <div className="error-message">{errorMessage}</div>}
 
-            {/* Форма */}
             <form onSubmit={handleSubmit}>
                 
-                {/* Поле "Имя" показываем только при регистрации */}
                 {activeTab === 'register' && (
                 <div className="input-group">
                     <input 
@@ -108,7 +108,7 @@ export default function AuthPage() {
                     className="auth-input" 
                     placeholder="Ваше ім'я" 
                     value={username}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setUsername(e.target.value)}
                     required 
                     />
                 </div>
@@ -125,7 +125,6 @@ export default function AuthPage() {
                 />
                 </div>
 
-                {/* Поле "Телефон" показываем только при регистрации */}
                 {activeTab === 'register' && (
                 <div className="input-group">
                     <input 
@@ -171,5 +170,7 @@ export default function AuthPage() {
 
         </div>
     </div>
+    <Footer />
+    </>
   );
 }
