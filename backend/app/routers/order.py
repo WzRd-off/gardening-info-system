@@ -9,13 +9,13 @@ from app.models.orders import Orders
 from app.models.orderstatus import OrderStatus
 from app.models.users import Users
 from app.models.services import Services
-from app.schemas.orders import OrderCreate, OrderRead
+from app.schemas.orders import OrderCreate, OrderOut
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 # Отримання всіх замовлень (для менеджера)
 
-@router.get("/", response_model=list[OrderRead])
+@router.get("/", response_model=list[OrderOut])
 async def get_orders(db: Session = Depends(get_db)):
     orders_stmt = select(Orders)
     orders = db.execute(orders_stmt).scalars().all()
@@ -24,7 +24,7 @@ async def get_orders(db: Session = Depends(get_db)):
 
 # Отримання замовлень поточного користувача
 
-@router.get('/my_orders', response_model=list[OrderRead])
+@router.get('/my_orders', response_model=list[OrderOut])
 async def get_my_orders(db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
     orders_stmt = select(Orders).where(Orders.user_id == current_user.id)
     orders = db.execute(orders_stmt).scalars().all()
@@ -33,7 +33,7 @@ async def get_my_orders(db: Session = Depends(get_db), current_user: Users = Dep
 
 # Отримання замовлень, які виконуються певною командою
 
-@router.get('/teams/{team_id}', response_model=list[OrderRead])
+@router.get('/teams/{team_id}', response_model=list[OrderOut])
 async def get_orders_by_team(team_id: int, db: Session = Depends(get_db)):
     orders_stmt = select(Orders).where(Orders.team_id == team_id)
     orders = db.execute(orders_stmt).scalars().all()
@@ -42,7 +42,7 @@ async def get_orders_by_team(team_id: int, db: Session = Depends(get_db)):
 
 # Отримання історії замовлень, які виконувала певна команда
 
-@router.get('/history-completed/teams/{team_id}', response_model=list[OrderRead])
+@router.get('/history-completed/teams/{team_id}', response_model=list[OrderOut])
 async def get_completed_orders_by_team(team_id: int, db: Session = Depends(get_db)):
     orders_stmt = select(Orders).where(Orders.team_id == team_id, Orders.status_id == 3)
     orders = db.execute(orders_stmt).scalars().all()

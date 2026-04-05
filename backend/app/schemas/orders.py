@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -23,6 +23,5 @@ class OrderOut(OrderBase):
     manager_instructions: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)

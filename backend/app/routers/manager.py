@@ -9,7 +9,7 @@ from sqlalchemy import select, cast, Date
 from typing import List, Optional, Annotated
 from decimal import Decimal
 from pathlib import Path
-from datetime import date, datetime
+from datetime import date
 import uuid
 import shutil
 import os
@@ -180,7 +180,7 @@ def get_all_orders(db: Session = Depends(get_db)):
     orders = db.query(Orders).all()
     return orders
 
-@router.patch("/orders/{order_id}", response_model=OrderOut)
+@router.patch("/orders/{order_id}")
 def update_order_by_manager(order_id: int, order_update: OrderUpdate, db: Session = Depends(get_db)):
     """
     Управління замовленням менеджером.
@@ -202,7 +202,9 @@ def update_order_by_manager(order_id: int, order_update: OrderUpdate, db: Sessio
         
     db.commit()
     db.refresh(order)
-    return order
+    return JSONResponse(status_code=status.HTTP_200_OK, content={
+        'status': 'success', 'message': 'Замовлення успішно оновлено'
+    })
 
 @router.post("/schedules", status_code=status.HTTP_201_CREATED)
 def manage_schedule(schedule_data: ScheduleCreate, db: Session = Depends(get_db)):

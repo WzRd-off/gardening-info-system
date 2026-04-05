@@ -1,29 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf } from 'lucide-react';
 
 export default function Header() {
+
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('jwt');
+        if (token) {
+        setIsLoggedIn(true);
+        }
+    }, []);
+
     return (
-        <>
-        <header className="header">
-            <div className="header__logo">
-                <Link to="/">Garden</Link>
-            </div>
-            <nav className="header__nav">
-                <ul className="nav-list">
-                    <li className="nav-item">
-                        <Link to="/" className="header__nav_link">Головна</Link>
-                    </li>
+    <header className="header-container">
+        <div className="header-logo-wrapper">
+            <span className="header-logo">
+            Garden
+            </span>
+        </div>
 
-                    <li className="nav-item">
-                        <Link to="/contact" className="header__nav_link">Контакты</Link>
-                    </li>
-                    <li toclassName="nav-item">
+        <nav className="header-nav">
+            <Link to="/" className="nav-link">
+            Головна
+            </Link>
+            <Link to="#services" className="nav-link">
+            Послуги
+            </Link>
+            <Link to="/contacts" className="nav-link">
+            Контакти
+            </Link>
+        </nav>
+        <div className="header-cta-wrapper">
 
-                    </li>
-                </ul>
-            </nav>
-        </header>
-        </>
+            {isLoggedIn ? (
+                <Link to="/profile" className="none-text-decoration ">
+                    <button className="btn-outline">
+                    Профіль
+                    </button>
+                </Link>
+            ) : (
+                <Link to="/auth" className="none-text-decoration ">
+                    <button className="btn-outline">
+                    Увійти
+                    </button>
+                </Link>
+            )}
+
+
+        </div>
+    </header>
     );
 }

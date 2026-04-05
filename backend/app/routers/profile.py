@@ -8,7 +8,7 @@ from app.utils.database import get_db
 from app.utils.security import get_current_user
 from app.schemas.users import UserRead, UserUpdate, PasswordUpdate
 from app.schemas.gardenplots import GardenPlotCreate, GardenPlotRead
-from app.schemas.orders import OrderRead
+from app.schemas.orders import OrderOut
 from app.schemas.plants import PlantCreate, PlantOut
 from app.models.users import Users
 from app.models.gardenplots import GardenPlots
@@ -167,7 +167,7 @@ async def delete_plot(plot_id: int,
 
 # Отримання історії обслуговування ділянок поточного користувача
 
-@router.get('/plots_history', response_model=list[OrderRead])
+@router.get('/plots_history', response_model=list[OrderOut])
 async def get_plots_history(db: Session = Depends(get_db), 
                             current_user: Users = Depends(get_current_user)):
     stmt = select(Orders).where(Orders.user_id == current_user.id and (Orders.status_id == 4 or Orders.status_id == 5))

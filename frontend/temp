@@ -1,23 +1,25 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
 
-export default function MainPage(){
-    return (
-        <>
-            <Header/>
-                <div className="home-container">
+// Заглушка для Link (у реальному проєкті використовуйте import { Link } from 'react-router-dom';)
+const Link = ({ to, children, className, style }) => (
+  <a href={to} className={className} style={style}>
+    {children}
+  </a>
+);
 
-     {/* HERO SECTION */}
+export default function Home() {
+  return (
+    <div className="home-container">
+
+      {/* HERO SECTION */}
       <section className="hero-section">
         <div className="hero-overlay"></div>
         <div className="hero-content">
-          <h1 className="h1">Створюємо гармонію природи у вашому дворі</h1>
-          <p className="text-body">
+          <h1 className="h1 animate-fade-in">Створюємо гармонію природи у вашому дворі</h1>
+          <p className="text-body animate-fade-in">
             EcoGarden — ваш надійний партнер у догляді за садом, поливі та професійному ландшафтному дизайні. Делегуйте турботи нам і насолоджуйтесь результатом.
           </p>
-          <div className="hero-actions">
+          <div className="hero-actions animate-fade-in">
             <Link to="/auth" className="btn-filled">Оформити замовлення</Link>
             <Link to="#services" className="btn-outline btn-outline-white">Наші послуги</Link>
           </div>
@@ -137,7 +139,7 @@ export default function MainPage(){
             <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80" alt="Сучасний двір" />
             <div className="portfolio-overlay">
               <span className="portfolio-tag">Ландшафт</span>
-              <h3 className="h3" style={{color: 'rgba(255,255,255,0.7)'}}>Озеленення приватного двору</h3>
+              <h3 className="h3">Озеленення приватного двору</h3>
               <p className="text-body" style={{color: 'rgba(255,255,255,0.7)'}}>Київська область, 2023</p>
             </div>
           </div>
@@ -146,7 +148,7 @@ export default function MainPage(){
             <img src="https://images.unsplash.com/photo-1558904541-efa843a96f09?auto=format&fit=crop&w=1200&q=80" alt="Система поливу" />
             <div className="portfolio-overlay">
               <span className="portfolio-tag">Полив</span>
-              <h3 className="h3" style={{color: 'rgba(255,255,255,0.7)'}}>Монтаж автополиву та газон</h3>
+              <h3 className="h3">Монтаж автополиву та газон</h3>
               <p className="text-body" style={{color: 'rgba(255,255,255,0.7)'}}>Котеджне містечко, 2024</p>
             </div>
           </div>
@@ -155,7 +157,7 @@ export default function MainPage(){
             <img src="https://images.unsplash.com/photo-1598902108854-10e335adac99?auto=format&fit=crop&w=1200&q=80" alt="Ландшафтний дизайн" />
             <div className="portfolio-overlay">
               <span className="portfolio-tag">Садівництво</span>
-              <h3 className="h3" style={{color: 'rgba(255,255,255,0.7)'}}>Реконструкція старого саду</h3>
+              <h3 className="h3">Реконструкція старого саду</h3>
               <p className="text-body" style={{color: 'rgba(255,255,255,0.7)'}}>Одеса, 2024</p>
             </div>
           </div>
@@ -225,7 +227,5 @@ export default function MainPage(){
       </section>
 
     </div>
-            <Footer/>
-        </>
-    );
+  );
 }
