@@ -25,7 +25,6 @@ export default function Footer() {
                 <nav className="footer-nav">
                 <Link to="/" className="footer-link">Головна</Link>
                 <Link to="#services" className="footer-link">Послуги</Link>
-                <Link to="/portfolio" className="footer-link">Галерея робіт</Link>
                 <Link to="/contacts" className="footer-link">Контакти</Link>
                 </nav>
             </div>
