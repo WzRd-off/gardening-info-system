@@ -816,3 +816,213 @@ body {
 }
 
 .footer-legal-link:hover { color: var(--white); }
+
+/* ── PAGE WRAPPER ── */
+.contacts-page {
+  min-height: calc(100vh - 72px);
+  background-color: var(--white);
+}
+
+/* ── CONTACTS PAGE ── */
+.contacts-page {
+  min-height: calc(100vh - 72px);
+  background-color: var(--white);
+}
+
+/* Hero */
+.contacts-hero {
+  background: linear-gradient(135deg, var(--dark-green-block) 0%, var(--primary-green) 60%, #4caf50 100%);
+  padding: 72px 24px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.contacts-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+.contacts-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: -40px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+.contacts-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.contacts-eyebrow {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.12);
+  border-radius: 100px;
+  padding: 6px 16px;
+  margin-bottom: 24px;
+}
+
+/* Main section */
+.contacts-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+@media (max-width: 860px) {
+  .contacts-main { padding: 40px 16px 60px; }
+}
+
+/* Top row: contacts + hours */
+.contacts-top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 700px) {
+  .contacts-top-row { grid-template-columns: 1fr; }
+}
+
+/* Contact cards */
+.contacts-info-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.contact-info-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--white);
+  border: 1px solid var(--light-green-outline);
+  border-radius: 16px;
+  padding: 20px 24px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.contact-info-card:hover {
+  border-color: var(--accent-green);
+  box-shadow: 0 4px 16px rgba(0,125,0,0.1);
+  transform: translateY(-2px);
+}
+.contact-info-icon {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: var(--bg-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-green);
+}
+.contact-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.contact-info-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.contact-info-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+.contact-info-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Hours card */
+.contacts-hours-card {
+  background: var(--bg-light);
+  border-radius: 16px;
+  padding: 28px;
+  height: 100%;
+}
+.contacts-hours-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 20px 0;
+}
+.contacts-hours-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px 24px;
+  align-items: center;
+}
+.contacts-hours-day {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.contacts-hours-time {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: right;
+}
+.contacts-hours-closed {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Full-width map */
+.contacts-map-wrapper {
+  position: relative;
+  height: 400px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border: 1px solid var(--light-green-outline);
+}
+.contacts-map-wrapper iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.contacts-map-badge {
+  position: absolute;
+  bottom: 16px; left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border-radius: 100px;
+  padding: 8px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  white-space: nowrap;
+}
