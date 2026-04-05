@@ -4,6 +4,7 @@ from app.utils.database import Base
 
 class Users(Base):
     __tablename__ = "users"
+    
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False) 
     email = Column(String, unique=True, index=True, nullable=False) 
@@ -15,4 +16,4 @@ class Users(Base):
     team = relationship("Teams", back_populates="members", foreign_keys=[team_id])  
     role = relationship("Roles", back_populates="users")
     plots = relationship("GardenPlots", back_populates="owner")
-    orders = relationship("Orders", back_populates="client")
+    orders = relationship("Orders", back_populates="user")

@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class PlantBase(BaseModel):
-    name: str
+    plant_type: str
     description: Optional[str] = None
 
 class PlantCreate(PlantBase):

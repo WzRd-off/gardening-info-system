@@ -13,7 +13,6 @@ from app.models.roles import Roles
 router = APIRouter(prefix='/auth', tags=['Authentication'])
 
 # Реєстрація нового користувача
-
 @router.post('/reg')
 async def reg_user(user_data: dict, db: Session = Depends(get_db)):
     # Чи існує юзер
@@ -21,10 +20,7 @@ async def reg_user(user_data: dict, db: Session = Depends(get_db)):
     existing_user = db.execute(stmt).scalars().first()
 
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Користувач з такою поштою вже існує"
-        )
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Користувач з такою поштою вже існує")
     
     stmt_role = select(Roles).where(Roles.name == "Клієнт")
     role = db.execute(stmt_role).scalars().first()
@@ -44,14 +40,13 @@ async def reg_user(user_data: dict, db: Session = Depends(get_db)):
 
     db.add(new_user)
     db.commit()
-    db.refresh(new_user)
     
+    # ИСПРАВЛЕНО: stasus -> status
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={
-        'stasus': 'success', 'message': 'Користувача успішно зареєстровано'
+        'status': 'success', 'message': 'Користувача успішно зареєстровано'
     })
 
 # Авторизація користувача
-
 @router.post('/login')
 async def auth_user(auth_data: dict, db: Session = Depends(get_db)):
     # Пошук юзера
@@ -59,14 +54,9 @@ async def auth_user(auth_data: dict, db: Session = Depends(get_db)):
     user = db.execute(stmt).scalars().first()
 
     if not user or not bcrypt.verify(auth_data.get('password'), user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Невірний email або пароль"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Невірний email або пароль")
 
-    access_token = create_access_token(
-        data={"sub": str(user.id), "role": user.role_id}
-    )
+    access_token = create_access_token(data={"sub": str(user.id), "role": user.role_id})
 
     return JSONResponse(status_code=status.HTTP_200_OK, content={
         "status": "success", 

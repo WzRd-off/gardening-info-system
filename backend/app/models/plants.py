@@ -4,6 +4,7 @@ from app.utils.database import Base
 
 class Plants(Base):
     __tablename__ = "plants"
+    
     id = Column(Integer, primary_key=True, index=True)
     plant_type = Column(String, nullable=False)
     description = Column(Text)

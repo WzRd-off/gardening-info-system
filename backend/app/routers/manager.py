@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select, cast, Date
@@ -68,7 +68,7 @@ async def create_service(
         with file_path.open('wb') as buffer:
             shutil.copyfileobj(upload_file.file, buffer)
     except Exception:
-        raise HTTPException(status_code=500, detail="Помилка при збереженні файлу")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Помилка при збереженні файлу")
 
     image_url = f"/image/services/{unique_filename}"
 
@@ -191,7 +191,7 @@ def update_order_by_manager(order_id: int, order_update: OrderUpdate, db: Sessio
     """
     order = db.query(Orders).filter(Orders.id == order_id).first()
     if not order:
-        raise HTTPException(status_code=404, detail="Замовлення не знайдено")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Замовлення не знайдено")
     
     if order_update.team_id is not None:
         order.team_id = order_update.team_id
@@ -270,7 +270,7 @@ def assign_user_to_team(user_id: int, team_id: int, db: Session = Depends(get_db
     """
     user = db.query(Users).filter(Users.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Користувача не знайдено")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Користувача не знайдено")
         
     user.team_id = team_id
     db.commit()

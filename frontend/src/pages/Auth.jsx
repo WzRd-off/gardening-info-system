@@ -6,7 +6,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState(''); 
+  const [username, setName] = useState(''); 
   const [phone, setPhone] = useState('');
   
   const [errorMessage, setErrorMessage] = useState('');
@@ -28,7 +28,7 @@ export default function AuthPage() {
         formData.append('username', email); // В доках указано, что логин идет как username (email)
         formData.append('password', password);
 
-        const response = await fetch('http://127.0.0.1:8000/auth/login', {
+        const response = await fetch('/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -52,12 +52,12 @@ export default function AuthPage() {
         }
 
         // Регистрация: обычный JSON
-        const response = await fetch('http://127.0.0.1:8000/auth/reg', {
+        const response = await fetch('/auth/reg', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name, email, password, phone }),
+          body: JSON.stringify({ username, email, password, phone }),
         });
         
         const data = await response.json();
@@ -107,7 +107,7 @@ export default function AuthPage() {
                     type="text" 
                     className="auth-input" 
                     placeholder="Ваше ім'я" 
-                    value={name}
+                    value={username}
                     onChange={(e) => setName(e.target.value)}
                     required 
                     />

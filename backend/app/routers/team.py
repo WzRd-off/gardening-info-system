@@ -19,30 +19,19 @@ from app.schemas.teams import TeamCreate, TeamRead
 
 # Цей роутер обробляє всі запити, які стосуються роботи бригад, а також управління самими бригадами.
 # Захист конкретних роутів бригади (orders, finance) прописаний у них всередині через current_user.
-router = APIRouter(
-    prefix="/teams",
-    tags=["Teams Management"]
-)
+router = APIRouter(prefix="/teams", tags=["Teams Management"])
 
+# Створення нової бригади
 @router.post("/")
 def create_team(team_data: TeamCreate, db: Session = Depends(get_db)):
-    stmt = select(Teams).where(Teams.name == team_data.name)
-    existing_team = db.execute(stmt).scalar_one_or_none()
-
+    existing_team = db.execute(select(Teams).where(Teams.name == team_data.name)).scalar_one_or_none()
     if existing_team:
-        raise HTTPException(status_code=400, detail="Команда з такою назвою вже існує")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Команда з такою назвою вже існує")
 
-    new_team = Teams(
-        name=team_data.name,
-        efficiency_rating=team_data.efficiency_rating,
-        leader_id=team_data.leader_id
-    )
+    new_team = Teams(name=team_data.name, efficiency_rating=team_data.efficiency_rating, leader_id=team_data.leader_id)
     db.add(new_team)
     db.commit()
-    db.refresh(new_team)
-    return JSONResponse(status_code=201, content={
-        'status': 'success', 'message': 'Команда успішно створена'
-        })
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={'status': 'success', 'message': 'Команда створена'})
 
 @router.get("/", response_model=list[TeamRead])
 def get_all_teams(db: Session = Depends(get_db)):
@@ -50,47 +39,29 @@ def get_all_teams(db: Session = Depends(get_db)):
 
 @router.get("/orders", response_model=List[OrderOut])
 def get_team_orders(db: Session = Depends(get_db), current_user: Users = Depends(get_current_team)):
-    """
-    Перегляд призначених замовлень (п. 4.1 ТЗ).
-    Бригада бачить тільки ті замовлення, які призначені саме їй.
-    """
     if not current_user.team_id:
-        return [] # Якщо робітника ще не додали до жодної бригади
-        
-    orders = db.query(Orders).filter(Orders.team_id == current_user.team_id).all()
-    return orders
-
+        return []
+    return db.query(Orders).filter(Orders.team_id == current_user.team_id).all()
 
 @router.patch("/orders/{order_id}/status", response_model=OrderOut)
 def update_order_status(order_id: int, status_id: int, db: Session = Depends(get_db), current_user: Users = Depends(get_current_team)):
-    """
-    Управління статусами робіт.
-    Бригада може змінювати статус. Якщо статус = "виконано" (наприклад, ID = 4),
-    система автоматично створює запис у таблиці Payments (нараховує гроші).
-    """
     if not current_user.team_id:
-        raise HTTPException(status_code=403, detail="Ви не належите до жодної бригади")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ви не належите до бригади")
 
     order = db.query(Orders).filter(Orders.id == order_id, Orders.team_id == current_user.team_id).first()
     if not order:
-        raise HTTPException(status_code=404, detail="Замовлення не знайдено або воно не належить вашій бригаді")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Замовлення не знайдено")
 
-    # Оновлюємо статус
     order.status_id = status_id
 
-    # Якщо статус "виконано" (припустимо, що в базі status_id = 4 відповідає "виконано")
-    # Перевіряємо, чи ще немає платежу по цьому замовленню, щоб не нарахувати двічі
     if status_id == 4:
         existing_payment = db.query(Payments).filter(Payments.order_id == order.id).first()
         if not existing_payment:
-            # Отримуємо ціну послуги
             service = db.query(Services).filter(Services.id == order.service_id).first()
             if service:
-                # Створюємо платіж
                 new_payment = Payments(
                     order_id=order.id,
-                    amount=service.price,
-                    payment_status="Оплачено" # або "Очікує виплати", залежить від вашої бізнес-логіки
+                    amount=service.price
                 )
                 db.add(new_payment)
 
@@ -98,26 +69,15 @@ def update_order_status(order_id: int, status_id: int, db: Session = Depends(get
     db.refresh(order)
     return order
 
-
 @router.get("/finance")
 def get_team_finance(db: Session = Depends(get_db), current_user: Users = Depends(get_current_team)):
-    """
-    Фінансова інформація (п. 4.3 ТЗ).
-    Бригада може переглядати суму нарахувань, статистику та історію.
-    """
     if not current_user.team_id:
-        raise HTTPException(status_code=403, detail="Ви не належите до жодної бригади")
+        raise HTTPException(status_code=403, detail="Ви не належите до бригади")
 
-    # Шукаємо всі платежі за замовленнями, які виконала ця бригада
     payments_query = db.query(Payments).join(Orders).filter(Orders.team_id == current_user.team_id)
-    
-    # Історія платежів
     history = payments_query.all()
     
-    # Загальна сума нарахувань
     total_amount = db.query(func.sum(Payments.amount)).join(Orders).filter(Orders.team_id == current_user.team_id).scalar() or 0.0
-    
-    # Статистика: загальна кількість виконаних замовлень
     completed_orders_count = db.query(Orders).filter(Orders.team_id == current_user.team_id, Orders.status_id == 4).count()
 
     return {
@@ -129,8 +89,7 @@ def get_team_finance(db: Session = Depends(get_db), current_user: Users = Depend
                 "payment_id": p.id,
                 "order_id": p.order_id,
                 "amount": float(p.amount),
-                "status": p.payment_status,
-                "date": p.created_at
+                "date": p.payment_date
             } for p in history
         ]
     }
