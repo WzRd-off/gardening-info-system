@@ -13,7 +13,7 @@ export function HistoryTab() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('/orders/my_orders', { headers: authHeaders() })
+    fetch('http://127.0.0.1:8000/orders/my_orders', { headers: authHeaders() })
       .then(r => r.json())
       .then(d => setOrders(Array.isArray(d) ? d : []))
       .catch(() => setError('Не вдалося завантажити замовлення'))

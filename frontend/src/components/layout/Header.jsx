@@ -24,7 +24,7 @@ export default function Header() {
             <Link to="/" className="nav-link">
             Головна
             </Link>
-            <Link to="#services" className="nav-link">
+            <Link to="/services" className="nav-link">
             Послуги
             </Link>
             <Link to="/contacts" className="nav-link">

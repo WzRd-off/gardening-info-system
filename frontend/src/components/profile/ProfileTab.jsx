@@ -16,7 +16,7 @@ export function ProfileTab() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('/profile/my_profile', { headers: authHeaders() })
+    fetch('http://127.0.0.1:8000/profile/my_profile', { headers: authHeaders() })
       .then(r => r.json())
       .then(d => {
         setForm({ username: d.username ?? '', phone: d.phone ?? '' });
@@ -29,7 +29,7 @@ export function ProfileTab() {
   const handleSave = async () => {
     setSaving(true); setError(''); setSaved(false);
     try {
-      const r = await fetch('/profile/update_profile', {
+      const r = await fetch('http://127.0.0.1:8000/profile/update_profile', {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify(form),

@@ -18,7 +18,7 @@ export function PlotsTab() {
   const fetchPlots = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch('/profile/my_plots', { headers: authHeaders() });
+      const r = await fetch('http://127.0.0.1:8000/profile/my_plots', { headers: authHeaders() });
       const d = await r.json();
       setPlots(Array.isArray(d) ? d : []);
     } catch { setError('Не вдалося завантажити ділянки'); }
@@ -31,7 +31,7 @@ export function PlotsTab() {
     if (!newPlot.address.trim() || !newPlot.area) return;
     setAddingPlot(true);
     try {
-      const r = await fetch('/profile/my_plots', {
+      const r = await fetch('http://127.0.0.1:8000/profile/my_plots', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ address: newPlot.address, area: parseFloat(newPlot.area) }),

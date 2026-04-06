@@ -15,7 +15,7 @@ export function PlotCard({ plot, onRefresh }) {
   const fetchPlants = useCallback(async () => {
     setLoadingPlants(true);
     try {
-      const r = await fetch(`/profile/my_plots/${plot.id}/plants`, { headers: authHeaders() });
+      const r = await fetch(`http://127.0.0.1:8000/profile/my_plots/${plot.id}/plants`, { headers: authHeaders() });
       const d = await r.json();
       setPlants(Array.isArray(d) ? d : []);
     } catch { /* тихо */ }
@@ -28,7 +28,7 @@ export function PlotCard({ plot, onRefresh }) {
     if (!newPlant.trim()) return;
     setAddingPlant(true);
     try {
-      const r = await fetch(`/profile/my_plots/${plot.id}/plants`, {
+      const r = await fetch(`http://127.0.0.1:8000/profile/my_plots/${plot.id}/plants`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ name: newPlant.trim() }),
@@ -42,7 +42,7 @@ export function PlotCard({ plot, onRefresh }) {
 
   const handleDeletePlant = async (plantId) => {
     try {
-      await fetch(`/profile/my_plots/${plot.id}/plants/${plantId}`, {
+      await fetch(`http://127.0.0.1:8000/profile/my_plots/${plot.id}/plants/${plantId}`, {
         method: 'DELETE',
         headers: authHeaders(),
       });

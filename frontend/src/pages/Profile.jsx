@@ -18,7 +18,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!localStorage.getItem('jwt')) { navigate('/auth'); return; }
-    fetch('/profile/my_profile', { headers: authHeaders() })
+    fetch('http://127.0.0.1:8000/profile/my_profile', { headers: authHeaders() })
       .then(r => { if (r.status === 401) { localStorage.removeItem('jwt'); navigate('/auth'); } return r.json(); })
       .then(d => setUser(d))
       .catch(() => {});
