@@ -7,7 +7,6 @@ class Teams(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    efficiency_rating = Column(Float, default=0.0)
     leader_id = Column(Integer, ForeignKey("users.id", use_alter=True, name="fk_teams_users"), nullable=True)
     
     leader = relationship("Users", foreign_keys=[leader_id])

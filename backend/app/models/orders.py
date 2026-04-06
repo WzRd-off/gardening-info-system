@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, Numeric, String, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from app.utils.database import Base
 from datetime import datetime
@@ -13,9 +13,13 @@ class Orders(Base):
     plot_id = Column(Integer, ForeignKey("garden_plots.id"))
     service_id = Column(Integer, ForeignKey("services.id"))
     
+
     comment = Column(String, nullable=True) 
     manager_instructions = Column(Text, nullable=True) 
+    regularity = Column(String, nullable=True)
+    total_price = Column(Numeric(10, 2), nullable=True)
     
+    execution_date = Column(DateTime, nullable=True) 
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("Users", back_populates="orders")

@@ -6,6 +6,9 @@ class OrderBase(BaseModel):
     plot_id: int
     service_id: int
     comment: Optional[str] = None
+    execution_date: Optional[datetime] = None
+    regularity: Optional[str] = None
+    total_price: Optional[float] = None
 
 class OrderCreate(OrderBase):
     pass

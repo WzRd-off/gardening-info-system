@@ -41,14 +41,16 @@ async def create_order(order: OrderCreate,
     service = db.execute(select(Services).where(Services.id == order.service_id)).scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail=f"Послугу з ID {order.service_id} не знайдено")
-
-    # ИСПРАВЛЕНО: удалены execution_date, regularity, total_price, которых нет в модели
+    
     new_order = Orders(
         comment=order.comment,
         plot_id=order.plot_id,
         service_id=order.service_id,
         user_id=current_user.id,
-        status_id=1 # 'отримано'
+        status_id=1, # 'отримано'
+        execution_date=order.execution_date,
+        regularity=order.regularity,
+        total_price=order.total_price 
     )
 
     db.add(new_order)

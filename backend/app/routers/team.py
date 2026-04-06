@@ -28,7 +28,11 @@ def create_team(team_data: TeamCreate, db: Session = Depends(get_db)):
     if existing_team:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Команда з такою назвою вже існує")
 
-    new_team = Teams(name=team_data.name, efficiency_rating=team_data.efficiency_rating, leader_id=team_data.leader_id)
+    leader = db.query(Users).filter(Users.email == team_data.email).first()
+    if not leader:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Лідер бригади не знайдений")
+
+    new_team = Teams(name=team_data.name, leader_id=leader.id)
     db.add(new_team)
     db.commit()
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={'status': 'success', 'message': 'Команда створена'})
