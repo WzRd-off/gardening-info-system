@@ -32,8 +32,6 @@ def create_team(team_data: TeamCreate, db: Session = Depends(get_db)):
     if not leader:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Лідер бригади не знайдений")
 
-
-
     new_team = Teams(name=team_data.name, leader_id=leader.id)
     db.add(new_team)
     db.commit()
