@@ -8,10 +8,12 @@ export default function ServicesTab() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', price: '', image: null });
+  const [form, setForm] = useState({ name: '', description: '', price: '', category: '', image: null });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef();
+
+  const CATEGORIES = ["Система поливу", "Садівництво та догляд", "Ландшафний дизайн", "Екологічні матеріали", "Газон"];
 
   const fetchServices = useCallback(async () => {
     setLoading(true);
@@ -29,21 +31,21 @@ export default function ServicesTab() {
 
   const openAdd = () => {
     setSelected(null);
-    setForm({ name: '', description: '', price: '', image: null });
+    setForm({ name: '', description: '', price: '', category: '', image: null });
     setModal('add');
     setError('');
   };
 
   const openEdit = svc => {
     setSelected(svc);
-    setForm({ name: svc.name, description: svc.description || '', price: String(svc.price), image: null });
+    setForm({ name: svc.name, description: svc.description || '', price: String(svc.price), category: svc.category || '', image: null });
     setModal('edit');
     setError('');
   };
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.price) {
-      setError('Назва та ціна обов\'язкові');
+    if (!form.name.trim() || !form.price || !form.category) {
+      setError('Назва, категорія та ціна обов\'язкові');
       return;
     }
 
@@ -54,6 +56,7 @@ export default function ServicesTab() {
       formData.append('name', form.name);
       formData.append('description', form.description);
       formData.append('price', form.price.replace(',', '.'));
+      formData.append('category', form.category);
       if (form.image) formData.append('upload_file', form.image);
 
       const url = modal === 'edit'
@@ -112,7 +115,7 @@ export default function ServicesTab() {
           <table className="mgr-table">
             <thead>
               <tr className="mgr-table__head-row">
-                {['', 'Назва', 'Опис', 'Ціна (₴)', 'Дії'].map(h => (
+                {['', 'Назва', 'Категорія', 'Опис', 'Ціна (₴)', 'Дії'].map(h => (
                   <th key={h} className="mgr-table__head-cell">{h}</th>
                 ))}
               </tr>
@@ -123,17 +126,18 @@ export default function ServicesTab() {
                   'mgr-table__row',
                   selected?.id === svc.id ? 'mgr-table__row--selected' : index % 2 === 0 ? 'mgr-table__row--even' : 'mgr-table__row--odd',
                 ].join(' ');
-
+                console.log(`svc.image_url: ${svc.image_url}`);
                 return (
                   <tr key={svc.id} className={rowClass} onClick={() => setSelected(selected?.id === svc.id ? null : svc)}>
                     <td className="mgr-table__cell mgr-table__cell--image">
                       {svc.image_url ? (
-                        <img src={svc.image_url} alt="" className="mgr-table__image" />
+                        <img src={`http://127.0.0.1:8000${svc.image_url}`} alt="" className="mgr-table__image" />
                       ) : (
                         <div className="mgr-image-placeholder">{Icon.image}</div>
                       )}
                     </td>
                     <td className="mgr-table__cell mgr-table__cell--name">{svc.name}</td>
+                    <td className="mgr-table__cell mgr-table__cell--category">{svc.category || '—'}</td>
                     <td className="mgr-table__cell mgr-table__cell--description">
                       <span className="mgr-clamped-text">{svc.description || '—'}</span>
                     </td>
@@ -158,6 +162,12 @@ export default function ServicesTab() {
           <div className="mgr-form-grid">
             <Field label="Назва послуги *">
               <input className="mgr-input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Наприклад: Стрижка газону" />
+            </Field>
+            <Field label="Категорія *">
+              <select className="mgr-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
+                <option value="">Оберіть категорію</option>
+                {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
             </Field>
             <Field label="Опис">
               <textarea className="mgr-input mgr-input--textarea" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Короткий опис послуги..." />

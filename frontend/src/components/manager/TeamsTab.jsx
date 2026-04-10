@@ -8,7 +8,7 @@ export default function TeamsTab() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [newTeam, setNewTeam] = useState({ name: '', rating: '', leader: '' });
+  const [newTeam, setNewTeam] = useState({ name: '', email: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -59,13 +59,12 @@ export default function TeamsTab() {
         headers: jsonHeaders(),
         body: JSON.stringify({
           name: newTeam.name,
-          rating: newTeam.rating ? Number(newTeam.rating.replace(',', '.')) : null,
-          leader: newTeam.leader,
+          email: newTeam.email,
         }),
       });
       if (!response.ok) throw new Error((await response.json()).detail);
       setShowCreate(false);
-      setNewTeam({ name: '', rating: '', leader: '' });
+      setNewTeam({ name: '', email: '' });
       fetchAll();
     } catch (e) {
       setError(e.message);
@@ -98,12 +97,6 @@ export default function TeamsTab() {
                     <h3>{team.name}</h3>
                     {team.leader && <p className="mgr-team-card__leader">{Icon.user} {team.leader}</p>}
                   </div>
-                  {team.rating != null && (
-                    <div className="mgr-team-card__rating">
-                      {Icon.star}
-                      <span>{team.rating}</span>
-                    </div>
-                  )}
                 </div>
 
                 {stats === null ? (
@@ -156,10 +149,7 @@ export default function TeamsTab() {
               <input className="mgr-input" value={newTeam.name} onChange={e => setNewTeam(p => ({ ...p, name: e.target.value }))} placeholder="Бригада №1" />
             </Field>
             <Field label="Лідер (email)">
-              <input className="mgr-input" value={newTeam.leader} onChange={e => setNewTeam(p => ({ ...p, leader: e.target.value }))} placeholder="ivan@example.com" />
-            </Field>
-            <Field label="Рейтинг (1–5)" hint="Тільки цифри та кома">
-              <input className="mgr-input" value={newTeam.rating} onKeyDown={e => { if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', ','].includes(e.key) && (e.key < '0' || e.key > '9')) e.preventDefault(); }} onChange={e => setNewTeam(p => ({ ...p, rating: e.target.value }))} placeholder="4,5" />
+              <input className="mgr-input" value={newTeam.email} onChange={e => setNewTeam(p => ({ ...p, email: e.target.value }))} placeholder="ivan@example.com" />
             </Field>
           </div>
           <div className="mgr-modal__actions">
