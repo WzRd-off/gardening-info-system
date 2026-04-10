@@ -49,6 +49,7 @@ async def create_service(
     name: Annotated[str, Form()],
     price: Annotated[Decimal, Form()],
     description: Annotated[str, Form()] = None,
+    category: Annotated[str, Form()] = None,
     upload_file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -57,7 +58,7 @@ async def create_service(
     Приймає текстові дані через форму (назва, ціна, опис) та файл зображення.
     Зберігає зображення локально на сервері та записує шлях у базу даних.
     """
-    temp_dir = Path('image/services')
+    temp_dir = Path('images/services')
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     file_extension = Path(upload_file.filename).suffix
@@ -70,11 +71,12 @@ async def create_service(
     except Exception:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Помилка при збереженні файлу")
 
-    image_url = f"/image/services/{unique_filename}"
+    image_url = f"/images/services/{unique_filename}"
 
     new_service = Services(
         name=name,
         description=description,
+        category=category,
         price=price,
         image_url=image_url
     )
@@ -93,6 +95,7 @@ async def update_service(
     name: Annotated[Optional[str], Form()] = None,
     price: Annotated[Optional[Decimal], Form()] = None,
     description: Annotated[Optional[str], Form()] = None,
+    category: Annotated[Optional[str], Form()] = None, 
     upload_file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
@@ -119,7 +122,7 @@ async def update_service(
                 os.remove(old_file_path)
 
         # Зберігаємо новий файл
-        temp_dir = Path('image/services')
+        temp_dir = Path('images/services')
         temp_dir.mkdir(parents=True, exist_ok=True)
         
         file_extension = Path(upload_file.filename).suffix
@@ -129,7 +132,7 @@ async def update_service(
         with file_path.open('wb') as buffer:
             shutil.copyfileobj(upload_file.file, buffer)
         
-        service.image_url = f"/image/services/{unique_filename}"
+        service.image_url = f"/images/services/{unique_filename}"
 
     if name is not None:
         service.name = name
@@ -137,6 +140,8 @@ async def update_service(
         service.price = price
     if description is not None:
         service.description = description
+    if category is not None:
+        service.category = category
 
     db.commit()
     db.refresh(service)
