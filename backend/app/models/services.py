@@ -10,5 +10,6 @@ class Services(Base):
     description = Column(Text) 
     price = Column(Numeric(10, 2))
     image_url = Column(String)
-    
+    category = Column(String) # Система поливу, Садівництво та догляд, Ландшафний дизайн, Екологічні матеріали, Газон
+        
     orders = relationship("Orders", back_populates="service")
