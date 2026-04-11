@@ -5,6 +5,7 @@ import Footer from '../components/layout/Footer';
 import { ProfileTab } from '../components/profile/ProfileTab';
 import { PlotsTab } from '../components/profile/PlotsTab';
 import { HistoryTab } from '../components/profile/HistoryTab';
+import { API_BASE_URL } from '../services/config';
 
 const authHeaders = () => ({
   'Content-Type': 'application/json',
@@ -18,7 +19,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!localStorage.getItem('jwt')) { navigate('/auth'); return; }
-    fetch('http://127.0.0.1:8000/profile/my_profile', { headers: authHeaders() })
+    fetch(`${API_BASE_URL}/profile/my_profile`, { headers: authHeaders() })
       .then(r => { if (r.status === 401) { localStorage.removeItem('jwt'); navigate('/auth'); } return r.json(); })
       .then(d => setUser(d))
       .catch(() => {});

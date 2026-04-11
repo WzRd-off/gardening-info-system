@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Icons } from './Icons.jsx';
 import { Spinner } from './Spinner';
 import { authHeaders } from './utils';
+import { API_BASE_URL } from '../../services/config';
 
 const MONTHLY_TARGET = 20;
 
@@ -11,7 +12,7 @@ export function FinanceTab() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/teams/finance', { headers: authHeaders() })
+    fetch(`${API_BASE_URL}/teams/finance`, { headers: authHeaders() })
       .then(r => { if (!r.ok) throw new Error('Помилка завантаження'); return r.json(); })
       .then(d => setData(d))
       .catch(e => setError(e.message))

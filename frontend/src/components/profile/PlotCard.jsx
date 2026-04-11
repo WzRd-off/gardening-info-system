@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../../services/config';
 
 const authHeaders = () => ({
   'Content-Type': 'application/json',
@@ -15,10 +16,10 @@ export function PlotCard({ plot, onRefresh }) {
   const fetchPlants = useCallback(async () => {
     setLoadingPlants(true);
     try {
-      const r = await fetch(`http://127.0.0.1:8000/profile/my_plots/${plot.id}/plants`, { headers: authHeaders() });
+      const r = await fetch(`${API_BASE_URL}/profile/my_plots/${plot.id}/plants`, { headers: authHeaders() });
       const d = await r.json();
       setPlants(Array.isArray(d) ? d : []);
-    } catch { /* тихо */ }
+    } catch { }
     finally { setLoadingPlants(false); }
   }, [plot.id]);
 
@@ -28,7 +29,7 @@ export function PlotCard({ plot, onRefresh }) {
     if (!newPlant.trim()) return;
     setAddingPlant(true);
     try {
-      const r = await fetch(`http://127.0.0.1:8000/profile/my_plots/${plot.id}/plants`, {
+      const r = await fetch(`${API_BASE_URL}/profile/my_plots/${plot.id}/plants`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ name: newPlant.trim() }),
@@ -36,18 +37,18 @@ export function PlotCard({ plot, onRefresh }) {
       if (!r.ok) throw new Error();
       setNewPlant('');
       fetchPlants();
-    } catch { /* тихо */ }
+    } catch { }
     finally { setAddingPlant(false); }
   };
 
   const handleDeletePlant = async (plantId) => {
     try {
-      await fetch(`http://127.0.0.1:8000/profile/my_plots/${plot.id}/plants/${plantId}`, {
+      await fetch(`${API_BASE_URL}/profile/my_plots/${plot.id}/plants/${plantId}`, {
         method: 'DELETE',
         headers: authHeaders(),
       });
       fetchPlants();
-    } catch { /* тихо */ }
+    } catch {  }
   };
 
   return (

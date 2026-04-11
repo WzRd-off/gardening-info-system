@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { API_BASE_URL } from '../services/config';
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'register'
@@ -24,7 +25,7 @@ export default function AuthPage() {
 
     try {
       if (activeTab === 'login') {
-        const response = await fetch('http://127.0.0.1:8000/auth/login', {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json ; charset=utf-8',
@@ -49,11 +50,11 @@ export default function AuthPage() {
             return;
         }
 
-        const response = await fetch('http://127.0.0.1:8000/auth/reg', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-            },
+        const response = await fetch(`${API_BASE_URL}/auth/reg`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+          },
             body: JSON.stringify({
                 username: username,
                 email: email,

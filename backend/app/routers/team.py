@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
@@ -19,7 +19,9 @@ from app.schemas.teams import TeamCreate, TeamRead
 
 # Цей роутер обробляє всі запити, які стосуються роботи бригад, а також управління самими бригадами.
 # Захист конкретних роутів бригади (orders, finance) прописаний у них всередині через current_user.
-router = APIRouter(prefix="/teams", tags=["Teams Management"])
+router = APIRouter(
+    prefix="/teams",
+    tags=["Teams Management"])
 
 # Створення нової бригади
 @router.post("/")
@@ -53,7 +55,12 @@ def get_team_orders(db: Session = Depends(get_db), current_user: Users = Depends
     return db.query(Orders).filter(Orders.team_id == current_user.team_id).all()
 
 @router.patch("/orders/{order_id}/status", response_model=OrderOut)
-def update_order_status(order_id: int, status_id: int, db: Session = Depends(get_db), current_user: Users = Depends(get_current_team)):
+def update_order_status(
+    order_id: int, 
+    status_id: int = Body(..., embed=True),
+    db: Session = Depends(get_db), 
+    current_user: Users = Depends(get_current_team)
+    ):
     if not current_user.team_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ви не належите до бригади")
 

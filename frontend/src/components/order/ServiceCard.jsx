@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Icons } from '../order/Icons';
-
+import { API_BASE_URL } from '../../services/config';
 /**
  * Картка однієї послуги в каталозі.
  * Props:
@@ -15,7 +15,7 @@ export default function ServiceCard({ service, onOrder }) {
       {/* ── Зображення ── */}
       <div className="sc-image-wrap">
         {service.image_url ? (
-          <img src={service.image_url} alt={service.name} className="sc-image" />
+          <img src={`${API_BASE_URL}${service.image_url}`} alt={service.name} className="sc-image" />
         ) : (
           <div className="sc-image-placeholder">
             {Icons.imagePlaceholder}

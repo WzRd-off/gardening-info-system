@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Spinner, EmptyState, StatusBadge } from './CommonComponents';
+import { API_BASE_URL } from '../../services/config';
 
 const authHeaders = () => ({
   'Content-Type': 'application/json',
@@ -13,7 +14,7 @@ export function HistoryTab() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/orders/my_orders', { headers: authHeaders() })
+    fetch(`${API_BASE_URL}/orders/my_orders`, { headers: authHeaders() })
       .then(r => r.json())
       .then(d => setOrders(Array.isArray(d) ? d : []))
       .catch(() => setError('Не вдалося завантажити замовлення'))

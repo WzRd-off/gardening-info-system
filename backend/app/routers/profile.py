@@ -29,7 +29,6 @@ async def update_profile(profile_data: UserUpdate,
                          current_user: Users = Depends(get_current_user)):
     
     if profile_data.email and profile_data.email != current_user.email:
-        # ИСПРАВЛЕНО: передача нескольких условий через запятую
         stmt = select(Users).where(Users.email == profile_data.email, Users.id != current_user.id)
         existing_user = db.execute(stmt).scalars().first()
 
@@ -64,7 +63,6 @@ async def change_password(
 async def add_plot(plot_data: GardenPlotCreate, 
                    db: Session = Depends(get_db),
                    current_user: Users = Depends(get_current_user)):
-    # ИСПРАВЛЕНО: and заменено на запятую
     stmt = select(GardenPlots).where(GardenPlots.address == plot_data.address, GardenPlots.user_id == current_user.id)
     if db.execute(stmt).scalars().first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ділянка з такою адресою вже існує")
@@ -105,7 +103,6 @@ async def edit_plot(plot_id: int,
 # Видалення ділянок
 @router.delete('/delete_plot/{plot_id}')
 async def delete_plot(plot_id: int, db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
-    # ИСПРАВЛЕНО: and заменено на запятую
     stmt = select(GardenPlots).where(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id)
     plot = db.execute(stmt).scalars().first()
 
@@ -119,7 +116,6 @@ async def delete_plot(plot_id: int, db: Session = Depends(get_db), current_user:
 # Отримання історії обслуговування ділянок поточного користувача
 @router.get('/plots_history', response_model=list[OrderOut])
 async def get_plots_history(db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
-    # ИСПРАВЛЕНО: Использование .in_() вместо or
     stmt = select(Orders).where(Orders.user_id == current_user.id, Orders.status_id.in_([4, 5]))
     return db.execute(stmt).scalars().all()
 

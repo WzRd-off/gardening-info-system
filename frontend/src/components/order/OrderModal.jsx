@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icons } from '../order/Icons';
 import { authHeaders, jsonHeaders } from '../order/api';
+import { API_BASE_URL } from '../../services/config';
+
 
 const REPEAT_OPTIONS = [
   { value: 'once',    label: 'Разово' },
@@ -33,8 +35,8 @@ export default function OrderModal({ service, onClose, onSuccess }) {
   useEffect(() => {
     if (!localStorage.getItem('jwt')) { navigate('/auth'); return; }
     Promise.all([
-      fetch('/profile/my_plots', { headers: authHeaders() }).then(r => r.json()),
-      fetch('/manager/services', { headers: authHeaders() }).then(r => r.json()),
+      fetch(`${API_BASE_URL}/profile/my_plots`, { headers: authHeaders() }).then(r => r.json()),
+      fetch(`${API_BASE_URL}/manager/services`, { headers: authHeaders() }).then(r => r.json()),
     ])
       .then(([p, s]) => {
         setPlots(Array.isArray(p) ? p : []);
@@ -66,7 +68,7 @@ export default function OrderModal({ service, onClose, onSuccess }) {
     if (!date)            { setError('Вкажіть дату виконання'); return; }
     setSubmitting(true); setError('');
     try {
-      const orderRes = await fetch('/orders/', {
+      const orderRes = await fetch(`${API_BASE_URL}/orders/`, {
         method: 'POST',
         headers: jsonHeaders(),
         body: JSON.stringify({
@@ -77,7 +79,7 @@ export default function OrderModal({ service, onClose, onSuccess }) {
       });
       if (!orderRes.ok) throw new Error((await orderRes.json()).detail || 'Помилка створення замовлення');
       const order = await orderRes.json();
-      await fetch('/manager/schedules', {
+      await fetch(`${API_BASE_URL}/manager/schedules`, {
         method: 'POST',
         headers: jsonHeaders(),
         body: JSON.stringify({ order_id: order.id, scheduled_date: date }),

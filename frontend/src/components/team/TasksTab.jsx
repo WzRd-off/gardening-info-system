@@ -5,6 +5,7 @@ import { EmptyState } from './EmptyState';
 import { TaskCard } from './TaskCard';
 import { TEAM_STATUSES } from './constants';
 import { authHeaders, jsonHeaders, resolveStatus } from './utils';
+import { API_BASE_URL } from '../../services/config';
 
 export function TasksTab() {
   const [orders, setOrders] = useState([]);
@@ -17,7 +18,7 @@ export function TasksTab() {
     setLoading(true);
     setError('');
     try {
-      const r = await fetch('http://127.0.0.1:8000/teams/orders', { headers: authHeaders() });
+      const r = await fetch(`${API_BASE_URL}/teams/orders`, { headers: authHeaders() });
       if (!r.ok) throw new Error('Помилка завантаження');
       const d = await r.json();
       setOrders(Array.isArray(d) ? d : []);
@@ -36,7 +37,7 @@ export function TasksTab() {
     setUpdating(orderId);
     setError('');
     try {
-      const r = await fetch(`http://127.0.0.1:8000/teams/orders/${orderId}/status`, {
+      const r = await fetch(`${API_BASE_URL}/teams/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: jsonHeaders(),
         body: JSON.stringify({ status_id: statusId }),

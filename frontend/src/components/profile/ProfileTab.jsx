@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Field } from './CommonComponents';
 import { Spinner } from './CommonComponents';
+import { API_BASE_URL } from '../../services/config';
 
 const authHeaders = () => ({
   'Content-Type': 'application/json',
@@ -16,7 +17,7 @@ export function ProfileTab() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/profile/my_profile', { headers: authHeaders() })
+    fetch(`${API_BASE_URL}/profile/my_profile`, { headers: authHeaders() })
       .then(r => r.json())
       .then(d => {
         setForm({ username: d.username ?? '', phone: d.phone ?? '' });
@@ -29,7 +30,7 @@ export function ProfileTab() {
   const handleSave = async () => {
     setSaving(true); setError(''); setSaved(false);
     try {
-      const r = await fetch('http://127.0.0.1:8000/profile/update_profile', {
+      const r = await fetch(`${API_BASE_URL}/profile/update_profile`, {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify(form),

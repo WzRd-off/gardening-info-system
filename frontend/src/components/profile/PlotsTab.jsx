@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Spinner, EmptyState, Field } from './CommonComponents';
 import { PlotCard } from './PlotCard';
+import { API_BASE_URL } from '../../services/config';
 
 const authHeaders = () => ({
   'Content-Type': 'application/json',
@@ -12,13 +13,13 @@ export function PlotsTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddPlot, setShowAddPlot] = useState(false);
-  const [newPlot, setNewPlot] = useState({ address: '', area: '' });
+  const [newPlot, setNewPlot] = useState({ address: '', area: '', features: '' });
   const [addingPlot, setAddingPlot] = useState(false);
 
   const fetchPlots = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch('http://127.0.0.1:8000/profile/my_plots', { headers: authHeaders() });
+      const r = await fetch(`${API_BASE_URL}/profile/my_plots`, { headers: authHeaders() });
       const d = await r.json();
       setPlots(Array.isArray(d) ? d : []);
     } catch { setError('Не вдалося завантажити ділянки'); }
@@ -31,13 +32,13 @@ export function PlotsTab() {
     if (!newPlot.address.trim() || !newPlot.area) return;
     setAddingPlot(true);
     try {
-      const r = await fetch('http://127.0.0.1:8000/profile/my_plots', {
+      const r = await fetch(`${API_BASE_URL}/profile/add_plot`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ address: newPlot.address, area: parseFloat(newPlot.area) }),
+        body: JSON.stringify({ address: newPlot.address, area: parseFloat(newPlot.area), features: newPlot.features }),
       });
       if (!r.ok) throw new Error();
-      setNewPlot({ address: '', area: '' });
+      setNewPlot({ address: '', area: '', features: '' });
       setShowAddPlot(false);
       fetchPlots();
     } catch { setError('Не вдалося додати ділянку'); }
@@ -80,6 +81,15 @@ export function PlotsTab() {
               />
             </Field>
           </div>
+          <Field label="Примітка">
+            <textarea
+              className="input"
+              placeholder="Додайте опис ділянки"
+              value={newPlot.features}
+              onChange={e => setNewPlot(p => ({ ...p, features: e.target.value }))}
+              style={{ resize: 'vertical', minHeight: '100px', fontFamily: 'inherit', padding: '10px'}}
+            />
+          </Field>
           <button
             onClick={handleAddPlot}
             disabled={addingPlot || !newPlot.address.trim() || !newPlot.area}

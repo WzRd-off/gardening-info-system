@@ -8,6 +8,7 @@ import ServiceCard from '../components/order/ServiceCard';
 import OrderModal from '../components/order/OrderModal';
 import SuccessScreen from '../components/order/SuccessScreen';
 import { authHeaders } from '../components/order/api';
+import { API_BASE_URL } from '../services/config';
 
 // Автоматично визначає категорію за назвою послуги
 function inferCategory(name) {
@@ -37,7 +38,7 @@ export default function CreateOrderPage() {
 
   // Завантаження каталогу
   useEffect(() => {
-    fetch('/manager/services', { headers: authHeaders() })
+    fetch(`${API_BASE_URL}/manager/services`, { headers: authHeaders() })
       .then(r => r.json())
       .then(d => setServices(Array.isArray(d) ? d : []))
       .catch(() => setError('Не вдалося завантажити каталог послуг'))

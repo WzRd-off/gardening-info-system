@@ -15,7 +15,6 @@ class OrderCreate(OrderBase):
 
 class OrderUpdate(BaseModel):
     team_id: Optional[int] = None
-    status_id: Optional[int] = None
     manager_instructions: Optional[str] = None
 
 class OrderOut(OrderBase):

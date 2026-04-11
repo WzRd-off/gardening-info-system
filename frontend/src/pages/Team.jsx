@@ -6,6 +6,7 @@ import { Icons } from '../components/team/Icons.jsx';
 import { TasksTab } from '../components/team/TasksTab';
 import { FinanceTab } from '../components/team/FinanceTab';
 import { authHeaders } from '../components/team/utils';
+import { API_BASE_URL } from '../services/config';
 
 export default function TeamPage() {
   const [activeTab, setActiveTab] = useState('tasks');
@@ -14,7 +15,7 @@ export default function TeamPage() {
 
   useEffect(() => {
     if (!localStorage.getItem('jwt')) { navigate('/auth'); return; }
-    fetch('http://127.0.0.1:8000/teams', { headers: authHeaders() })
+    fetch(`${API_BASE_URL}/teams`, { headers: authHeaders() })
       .then(r => r.json())
       .then(d => { if (Array.isArray(d) && d.length) setTeamInfo(d[0]); })
       .catch(() => {});

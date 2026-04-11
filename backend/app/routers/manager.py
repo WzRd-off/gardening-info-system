@@ -15,7 +15,7 @@ import shutil
 import os
 
 from app.utils.database import get_db
-from app.utils.security import get_current_manager
+from app.utils.security import get_current_manager, get_current_user
 
 from app.models.users import Users
 from app.models.orders import Orders
@@ -29,15 +29,16 @@ from app.schemas.schedules import ScheduleCreate, ScheduleOut
 
 router = APIRouter(
     prefix="/manager",
-    tags=["Manager"],
-    dependencies=[Depends(get_current_manager)] 
+    tags=["Manager"]
 )
 
 @router.get('/services', response_model=list[ServiceRead])
-def get_services(db: Session = Depends(get_db)):
+def get_services(
+    db: Session = Depends(get_db),
+    current_user: Users = Depends(get_current_user)
+    ):
     """
     Отримання списку всіх доступних послуг.
-    Менеджер може переглядати всі послуги, які зараз пропонує компанія.
     """
     services_stmt = select(Services)
     services = db.execute(services_stmt).scalars().all()
@@ -51,7 +52,8 @@ async def create_service(
     description: Annotated[str, Form()] = None,
     category: Annotated[str, Form()] = None,
     upload_file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
 ):
     """
     Створення нової послуги.
@@ -97,7 +99,8 @@ async def update_service(
     description: Annotated[Optional[str], Form()] = None,
     category: Annotated[Optional[str], Form()] = None, 
     upload_file: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
 ):
     """
     Оновлення існуючої послуги.
@@ -149,7 +152,11 @@ async def update_service(
     return service
 
 @router.delete('/services/{service_id}')
-async def delete_service(service_id: int, db: Session = Depends(get_db)):
+async def delete_service(
+    service_id: int,
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+    ):
     """
     Видалення послуги.
     Видаляє запис з бази даних, а також фізично видаляє файл зображення з сервера,
@@ -177,7 +184,10 @@ async def delete_service(service_id: int, db: Session = Depends(get_db)):
     })
 
 @router.get("/orders", response_model=List[OrderOut])
-def get_all_orders(db: Session = Depends(get_db)):
+def get_all_orders(
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+    ):
     """
     Перегляд усіх замовлень у системі.
     Використовується менеджером для контролю ефективності та відстеження нових заявок.
@@ -186,12 +196,16 @@ def get_all_orders(db: Session = Depends(get_db)):
     return orders
 
 @router.patch("/orders/{order_id}")
-def update_order_by_manager(order_id: int, order_update: OrderUpdate, db: Session = Depends(get_db)):
+def update_order_by_manager(
+    order_id: int, 
+    order_update: OrderUpdate, 
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+    ):
     """
     Управління замовленням менеджером.
     Дозволяє менеджеру:
     - Призначити бригаду виконавців (team_id) на замовлення.
-    - Змінити поточний статус замовлення (status_id).
     - Додати спеціальні інструкції для бригади (manager_instructions).
     """
     order = db.query(Orders).filter(Orders.id == order_id).first()
@@ -200,8 +214,6 @@ def update_order_by_manager(order_id: int, order_update: OrderUpdate, db: Sessio
     
     if order_update.team_id is not None:
         order.team_id = order_update.team_id
-    if order_update.status_id is not None:
-        order.status_id = order_update.status_id
     if order_update.manager_instructions is not None:
         order.manager_instructions = order_update.manager_instructions
         
@@ -212,7 +224,11 @@ def update_order_by_manager(order_id: int, order_update: OrderUpdate, db: Sessio
     })
 
 @router.post("/schedules", status_code=status.HTTP_201_CREATED)
-def manage_schedule(schedule_data: ScheduleCreate, db: Session = Depends(get_db)):
+def manage_schedule(
+    schedule_data: ScheduleCreate, 
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+    ):
     """
     Додавання замовлення в розклад АБО перенесення дати (якщо розклад вже існує).
     """
@@ -235,7 +251,10 @@ def manage_schedule(schedule_data: ScheduleCreate, db: Session = Depends(get_db)
     return {"status": "success", "message": message}
 
 @router.get("/schedules", response_model=List[ScheduleOut])
-def get_schedules_for_calendar(db: Session = Depends(get_db)):
+def get_schedules_for_calendar(
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+    ):
     """
     Отримання всіх розкладів для відображення календаря на фронтенді.
     """
@@ -243,7 +262,12 @@ def get_schedules_for_calendar(db: Session = Depends(get_db)):
     return schedules
 
 @router.get("/teams/{team_id}/workload")
-def get_team_workload(team_id: int, target_date: date, db: Session = Depends(get_db)):
+def get_team_workload(
+    team_id: int, 
+    target_date: date, 
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+    ):
     """
     Розрахунок завантаженості бригади на конкретний день.
     Повертає відсоток завантаженості. 
@@ -268,7 +292,12 @@ def get_team_workload(team_id: int, target_date: date, db: Session = Depends(get
     }
 
 @router.patch("/users/{user_id}/assign-team")
-def assign_user_to_team(user_id: int, team_id: int, db: Session = Depends(get_db)):
+def assign_user_to_team(
+    user_id: int, 
+    team_id: int, 
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+    ):
     """
     Формування бригади. 
     Додає робітника (користувача) до вказаної бригади.

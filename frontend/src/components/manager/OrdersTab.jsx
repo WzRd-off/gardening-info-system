@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { STATUS_LIST, authHeaders, jsonHeaders } from './constants';
 import { Spinner, EmptyState, Modal, Field, StatusBadge } from './shared';
 import { Icon } from './icons';
+import { API_BASE_URL } from '../../services/config';
 
 export default function OrdersTab() {
   const [orders, setOrders] = useState([]);
@@ -24,8 +25,8 @@ export default function OrdersTab() {
       if (filterTeam) params.set('team_id', filterTeam);
 
       const [ordersResponse, teamsResponse] = await Promise.all([
-        fetch(`http://127.0.0.1:8000/manager/orders?${params}`, { headers: authHeaders() }),
-        fetch('http://127.0.0.1:8000/teams/', { headers: authHeaders() }),
+        fetch(`${API_BASE_URL}/manager/orders?${params}`, { headers: authHeaders() }),
+        fetch(`${API_BASE_URL}/teams/`, { headers: authHeaders() }),
       ]);
 
       const [orderData, teamData] = await Promise.all([ordersResponse.json(), teamsResponse.json()]);
@@ -43,7 +44,7 @@ export default function OrdersTab() {
   const patch = async (id, body) => {
     setSaving(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/manager/orders/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/manager/orders/${id}`, {
         method: 'PATCH',
         headers: jsonHeaders(),
         body: JSON.stringify(body),
@@ -60,7 +61,7 @@ export default function OrdersTab() {
   const saveDate = async () => {
     setSaving(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/manager/schedules', {
+      const response = await fetch(`${API_BASE_URL}/manager/schedules`, {
         method: 'POST',
         headers: jsonHeaders(),
         body: JSON.stringify({ order_id: dateModal.id, scheduled_date: dateValue }),
@@ -124,10 +125,6 @@ export default function OrdersTab() {
                   onChange={e => patch(order.id, { team_id: e.target.value ? Number(e.target.value) : null })}>
                   <option value="">Без бригади</option>
                   {teams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}
-                </select>
-                <select className="mgr-input mgr-input--select" value={order.status_id ?? ''}
-                  onChange={e => patch(order.id, { status_id: Number(e.target.value) })}>
-                  {STATUS_LIST.map(status => <option key={status.id} value={status.id}>{status.name}</option>)}
                 </select>
                 <button type="button" className="mgr-button mgr-button--outlined mgr-button--small" onClick={() => { setInstrModal(order); setInstrText(order.manager_instructions || ''); }}>{Icon.note} Інструкції</button>
                 <button type="button" className="mgr-button mgr-button--outlined mgr-button--small" onClick={() => { setDateModal(order); setDateValue(order.scheduled_date?.slice(0, 10) || ''); }}>{Icon.calendar} Дата</button>

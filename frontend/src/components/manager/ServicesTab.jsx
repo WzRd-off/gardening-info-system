@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Icon } from './icons';
 import { authHeaders } from './constants';
 import { Spinner, EmptyState, Modal, Field } from './shared';
+import { API_BASE_URL } from '../../services/config';
 
 export default function ServicesTab() {
   const [services, setServices] = useState([]);
@@ -18,7 +19,7 @@ export default function ServicesTab() {
   const fetchServices = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/manager/services', { headers: authHeaders() });
+      const response = await fetch(`${API_BASE_URL}/manager/services`, { headers: authHeaders() });
       setServices(await response.json());
     } catch {
       setError('Не вдалося завантажити послуги');
@@ -60,8 +61,8 @@ export default function ServicesTab() {
       if (form.image) formData.append('upload_file', form.image);
 
       const url = modal === 'edit'
-        ? `http://127.0.0.1:8000/manager/services/${selected.id}`
-        : 'http://127.0.0.1:8000/manager/services';
+        ? `${API_BASE_URL}/manager/services/${selected.id}`
+        : `${API_BASE_URL}/manager/services`;
       const response = await fetch(url, {
         method: modal === 'edit' ? 'PUT' : 'POST',
         headers: authHeaders(),
@@ -81,7 +82,7 @@ export default function ServicesTab() {
   const handleDelete = async id => {
     if (!window.confirm('Видалити послугу?')) return;
     try {
-      await fetch(`http://127.0.0.1:8000/manager/services/${id}`, { method: 'DELETE', headers: authHeaders() });
+      await fetch(`${API_BASE_URL}/manager/services/${id}`, { method: 'DELETE', headers: authHeaders() });
       fetchServices();
       setSelected(null);
     } catch {
@@ -131,7 +132,7 @@ export default function ServicesTab() {
                   <tr key={svc.id} className={rowClass} onClick={() => setSelected(selected?.id === svc.id ? null : svc)}>
                     <td className="mgr-table__cell mgr-table__cell--image">
                       {svc.image_url ? (
-                        <img src={`http://127.0.0.1:8000${svc.image_url}`} alt="" className="mgr-table__image" />
+                        <img src={`${API_BASE_URL}${svc.image_url}`} alt="" className="mgr-table__image" />
                       ) : (
                         <div className="mgr-image-placeholder">{Icon.image}</div>
                       )}
