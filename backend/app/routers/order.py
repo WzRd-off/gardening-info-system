@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.utils.database import get_db
 from app.utils.security import get_current_user
@@ -9,38 +9,73 @@ from app.models.orders import Orders
 from app.models.orderstatus import OrderStatus
 from app.models.users import Users
 from app.models.services import Services
-from app.schemas.orders import OrderCreate, OrderOut
+from app.schemas.orders import OrderCreate, OrderOut, OrderResponse
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 # Отримання всіх замовлень
-@router.get("/", response_model=list[OrderOut])
+@router.get("/", response_model=list[OrderResponse])
 async def get_orders(db: Session = Depends(get_db)):
-    return db.execute(select(Orders)).scalars().all()
+    return db.execute(
+        select(Orders)
+        .options(
+            joinedload(Orders.user),
+            joinedload(Orders.status),
+            joinedload(Orders.plot),
+            joinedload(Orders.service)
+        )
+    ).unique().scalars().all()
 
 # Отримання замовлень поточного користувача
-@router.get('/my_orders', response_model=list[OrderOut])
+@router.get('/my_orders', response_model=list[OrderResponse])
 async def get_my_orders(
     db: Session = Depends(get_db), 
     current_user: Users = Depends(get_current_user)
     ):
-    return db.execute(select(Orders).where(Orders.user_id == current_user.id)).scalars().all()
+    return db.execute(
+        select(Orders)
+        .where(Orders.user_id == current_user.id)
+        .options(
+            joinedload(Orders.user),
+            joinedload(Orders.status),
+            joinedload(Orders.plot),
+            joinedload(Orders.service)
+        )
+    ).unique().scalars().all()
 
 # Отримання замовлень, які виконуються певною командою
-@router.get('/teams/{team_id}', response_model=list[OrderOut])
+@router.get('/teams/{team_id}', response_model=list[OrderResponse])
 async def get_orders_by_team(
     team_id: int, 
     db: Session = Depends(get_db)
     ):
-    return db.execute(select(Orders).where(Orders.team_id == team_id)).scalars().all()
+    return db.execute(
+        select(Orders)
+        .where(Orders.team_id == team_id)
+        .options(
+            joinedload(Orders.user),
+            joinedload(Orders.status),
+            joinedload(Orders.plot),
+            joinedload(Orders.service)
+        )
+    ).unique().scalars().all()
 
 # Отримання історії замовлень, які виконувала певна команда
-@router.get('/history-completed/teams/{team_id}', response_model=list[OrderOut])
+@router.get('/history-completed/teams/{team_id}', response_model=list[OrderResponse])
 async def get_completed_orders_by_team(
     team_id: int, 
     db: Session = Depends(get_db)
     ):
-    return db.execute(select(Orders).where(Orders.team_id == team_id, Orders.status_id == 3)).scalars().all()
+    return db.execute(
+        select(Orders)
+        .where(Orders.team_id == team_id, Orders.status_id == 3)
+        .options(
+            joinedload(Orders.user),
+            joinedload(Orders.status),
+            joinedload(Orders.plot),
+            joinedload(Orders.service)
+        )
+    ).unique().scalars().all()
 
 # Cтворення нового замовлення
 @router.post("/", status_code=status.HTTP_201_CREATED)

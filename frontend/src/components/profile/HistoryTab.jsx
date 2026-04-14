@@ -33,7 +33,7 @@ export function HistoryTab() {
           icon="📋"
           text="У вас ще немає жодного замовлення. Оформіть першу послугу для вашої ділянки."
           action={
-            <Link to="/order" className="btn-sm">Замовити послугу</Link>
+            <Link to="/services" className="btn-sm">Замовити послугу</Link>
           }
         />
       ) : (
@@ -46,8 +46,8 @@ export function HistoryTab() {
                 </p>
                 <div className="order-meta">
                   <span className="order-detail">📍 {order.plot?.address ?? `Ділянка #${order.plot_id}`}</span>
-                  {order.scheduled_date && (
-                    <span className="order-detail">📅 {new Date(order.scheduled_date).toLocaleDateString('uk-UA')}</span>
+                  {order.scheduled_time && (
+                    <span className="order-detail">📅 {new Date(order.scheduled_time).toLocaleDateString('uk-UA')}</span>
                   )}
                   {order.comment && (
                     <span className="order-detail" style={{ fontStyle: 'italic' }}>💬 {order.comment}</span>

@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from passlib.hash import bcrypt
 
 from app.utils.database import get_db
 from app.utils.security import get_current_user
 from app.schemas.users import UserRead, UserUpdate, PasswordUpdate
 from app.schemas.gardenplots import GardenPlotCreate, GardenPlotRead
-from app.schemas.orders import OrderOut
+from app.schemas.orders import OrderOut, OrderResponse
 from app.schemas.plants import PlantCreate, PlantOut
 from app.models.users import Users
 from app.models.gardenplots import GardenPlots
@@ -114,20 +114,36 @@ async def delete_plot(plot_id: int, db: Session = Depends(get_db), current_user:
     return JSONResponse(status_code=status.HTTP_200_OK, content={'status': 'success', 'message': 'Ділянка видалена'})
 
 # Отримання історії обслуговування ділянок поточного користувача
-@router.get('/plots_history', response_model=list[OrderOut])
-async def get_plots_history(db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
-    stmt = select(Orders).where(Orders.user_id == current_user.id, Orders.status_id.in_([4, 5]))
-    return db.execute(stmt).scalars().all()
+@router.get('/plots_history', response_model=list[OrderResponse])
+async def get_plots_history(
+    db: Session = Depends(get_db), 
+    current_user: Users = Depends(get_current_user)
+    ):
+    stmt = (
+        select(Orders)
+        .where(Orders.user_id == current_user.id, Orders.status_id.in_([4, 5]))
+        .options(
+            joinedload(Orders.user),
+            joinedload(Orders.status),
+            joinedload(Orders.plot),
+            joinedload(Orders.service)
+        )
+    )
+    return db.execute(stmt).unique().scalars().all()
 
 @router.post("/my_plots/{plot_id}/plants", response_model=PlantOut, status_code=status.HTTP_201_CREATED)
-def add_plant_to_plot(plot_id: int, plant: PlantCreate, db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
+def add_plant_to_plot(
+    plot_id: int,
+    plant: PlantCreate, 
+    db: Session = Depends(get_db), 
+    current_user: Users = Depends(get_current_user)
+    ):
     plot = db.query(GardenPlots).filter(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id).first()
     if not plot:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ділянку не знайдено")
     
     new_plant = Plants(
-        plant_type=plant.plant_type, # ИСПРАВЛЕНО: name -> plant_type
-        description=plant.description,
+        name=plant.name,
         plot_id=plot_id
     )
     db.add(new_plant)

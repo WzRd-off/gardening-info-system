@@ -63,13 +63,7 @@ export default function MainPage() {
           <div className="bento-grid">
             <div className="bento-card bento-large">
               <div className="bento-image-area">
-                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22v-7l-2-2"></path>
-                  <path d="M17 8v.5a3.5 3.5 0 0 1-7 0V8a5 5 0 0 1 10 0v.5a3.5 3.5 0 0 1-7 0V8"></path>
-                  <path d="M12 2v2"></path>
-                  <path d="M7 8H5"></path>
-                  <path d="M19 8h2"></path>
-                </svg>
+                <img className="bento-image" src="/garden-service.jpg" alt="Садівництво та догляд" />
               </div>
               <h3 className="bento-title">Садівництво та догляд</h3>
               <p className="text-body">
@@ -79,10 +73,7 @@ export default function MainPage() {
 
             <div className="bento-card bento-tall">
               <div className="bento-image-area">
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2v20"></path>
-                  <path d="M12 22a8 8 0 0 0 8-8c0-4.4-4-9.6-8-12-4 2.4-8 7.6-8 12a8 8 0 0 0 8 8z"></path>
-                </svg>
+                <img className="bento-image" src="/irrigation-system.jpg" alt="Системи поливу" />
               </div>
               <h3 className="bento-title">Системи поливу</h3>
               <p className="text-body">
@@ -92,10 +83,7 @@ export default function MainPage() {
 
             <div className="bento-card bento-small-1">
               <div className="bento-image-area">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 2 22 22 22 12 2"></polygon>
-                  <path d="M12 22V11"></path>
-                </svg>
+                <img className="bento-image" src="/model.avif" alt="Ландшафтний дизайн" />
               </div>
               <h3 className="bento-title">Ландшафтний дизайн</h3>
               <p className="text-body bento-small-text">Створення 3D-проектів, зонування та планування ділянки.</p>
@@ -103,24 +91,17 @@ export default function MainPage() {
 
             <div className="bento-card bento-small-2">
               <div className="bento-image-area">
-                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 12h20"></path>
-                  <path d="M12 2v20"></path>
-                  <path d="M5 5l14 14"></path>
-                  <path d="M19 5L5 19"></path>
-                </svg>
+                <img className="bento-image" src="/dern.jpg" alt="Ідеальний газон" />
               </div>
               <h3 className="bento-title">Ідеальний газон</h3>
               <p className="text-body bento-small-text">Укладання рулонного газону, аерація та систематична стрижка.</p>
             </div>
 
             <div className="bento-card bento-wide">
-               <div className="bento-image-area bento-eco-visual">
-                   <div className="eco-box box-accent"></div>
-                   <div className="eco-box box-primary"></div>
-                   <div className="eco-box box-secondary"></div>
-               </div>
-               <h3 className="bento-title">Екологічні матеріали</h3>
+              <div className="bento-image-area">
+                <img className="bento-image" src="/organic.jpg" alt="Екологічні матеріали" />
+              </div>
+              <h3 className="bento-title">Екологічні матеріали</h3>
                <p className="text-body">Ми використовуємо лише сертифіковані органічні добрива та безпечні засоби захисту рослин, зберігаючи мікрофлору ґрунту.</p>
             </div>
           </div>
@@ -153,47 +134,145 @@ export default function MainPage() {
           </div>
         </section>
 
-        {/* PORTFOLIO SLIDER SECTION */}
+        {/* PORTFOLIO GRID SECTION */}
         <section className="portfolio-section">
           <div className="portfolio-header">
             <div>
               <h2 className="h2 portfolio-title">Галерея робіт</h2>
               <p className="text-body">Ознайомтеся з нашими найкращими реалізованими проектами.</p>
             </div>
-            <div className="portfolio-nav-desktop">
-               <svg className="portfolio-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                 <circle cx="12" cy="12" r="10"></circle>
-                 <polyline points="12 16 16 12 12 8"></polyline>
-                 <line x1="8" y1="12" x2="16" y2="12"></line>
-               </svg>
-            </div>
           </div>
           
-          <div className="portfolio-slider">
-            <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80" alt="Сучасний двір" />
+          <div className="portfolio-grid">
+            <div className="portfolio-item portfolio-item--featured">
+              <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80" alt="Озеленення двору" />
               <div className="portfolio-overlay">
-                <span className="portfolio-tag">Ландшафт</span>
-                <h3 className="h3 portfolio-item-title">Озеленення приватного двору</h3>
-                <p className="text-body portfolio-item-desc">Київська область, 2023</p>
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Ландшафт</span>
+                  <h3 className="h3 portfolio-item-title">Озеленення приватного двору</h3>
+                  <p className="text-body portfolio-item-desc">Київська область, 2023</p>
+                </div>
               </div>
             </div>
             
             <div className="portfolio-item">
               <img src="https://images.unsplash.com/photo-1558904541-efa843a96f09?auto=format&fit=crop&w=1200&q=80" alt="Система поливу" />
               <div className="portfolio-overlay">
-                <span className="portfolio-tag">Полив</span>
-                <h3 className="h3 portfolio-item-title">Монтаж автополиву та газон</h3>
-                <p className="text-body portfolio-item-desc">Котеджне містечко, 2024</p>
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Полив</span>
+                  <h3 className="h3 portfolio-item-title">Монтаж автополиву та газон</h3>
+                  <p className="text-body portfolio-item-desc">Котеджне містечко, 2024</p>
+                </div>
               </div>
             </div>
 
             <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1598902108854-10e335adac99?auto=format&fit=crop&w=1200&q=80" alt="Ландшафтний дизайн" />
+              <img src="https://images.unsplash.com/photo-1598902108854-10e335adac99?auto=format&fit=crop&w=1200&q=80" alt="Реконструкція саду" />
               <div className="portfolio-overlay">
-                <span className="portfolio-tag">Садівництво</span>
-                <h3 className="h3 portfolio-item-title">Реконструкція старого саду</h3>
-                <p className="text-body portfolio-item-desc">Одеса, 2024</p>
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Садівництво</span>
+                  <h3 className="h3 portfolio-item-title">Реконструкція старого саду</h3>
+                  <p className="text-body portfolio-item-desc">Одеса, 2024</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item">
+              <img src="https://images.unsplash.com/photo-1585320817134-ab7cea356313?auto=format&fit=crop&w=1200&q=80" alt="Квітник з розами" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Дизайн</span>
+                  <h3 className="h3 portfolio-item-title">Красива клумба з розами</h3>
+                  <p className="text-body portfolio-item-desc">Львівська область, 2024</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item">
+              <img src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80" alt="Садова доріжка" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Ландшафт</span>
+                  <h3 className="h3 portfolio-item-title">Облаштування садової доріжки</h3>
+                  <p className="text-body portfolio-item-desc">Харківськая область, 2024</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item portfolio-item--featured">
+              <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80" alt="Зелений газон" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Газон</span>
+                  <h3 className="h3 portfolio-item-title">Укладка рулонного газону</h3>
+                  <p className="text-body portfolio-item-desc">Донецька область, 2024</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item">
+              <img src="https://images.unsplash.com/photo-1589967622444-8b8409e7e17d?auto=format&fit=crop&w=1200&q=80" alt="Фонтан у саду" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Водойми</span>
+                  <h3 className="h3 portfolio-item-title">Декоративний фонтан на ділянці</h3>
+                  <p className="text-body portfolio-item-desc">Zaporizhzhia region, 2023</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item">
+              <img src="https://images.unsplash.com/photo-1564334614601-1e9c92e0ce8b?auto=format&fit=crop&w=1200&q=80" alt="Комбіновані квітники" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Дизайн</span>
+                  <h3 className="h3 portfolio-item-title">Комбіновані клумби та боскети</h3>
+                  <p className="text-body portfolio-item-desc">Вінницька область, 2023</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item portfolio-item--featured">
+              <img src="https://images.unsplash.com/photo-1584341127014-9420d3acbd45?auto=format&fit=crop&w=1200&q=80" alt="Тіністі дерева" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Садівництво</span>
+                  <h3 className="h3 portfolio-item-title">Висадка декоративних дерев</h3>
+                  <p className="text-body portfolio-item-desc">Полтавська область, 2024</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item">
+              <img src="https://images.unsplash.com/photo-1586930252167-5aca5e42cddc?auto=format&fit=crop&w=1200&q=80" alt="Озеленення терас" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Дизайн</span>
+                  <h3 className="h3 portfolio-item-title">Озеленення та благоустрій терас</h3>
+                  <p className="text-body portfolio-item-desc">Чернівецька область, 2024</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item">
+              <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1200&q=80" alt="Садові скульптури" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Мистецтво</span>
+                  <h3 className="h3 portfolio-item-title">Прикраса саду скульптурами</h3>
+                  <p className="text-body portfolio-item-desc">Сумська область, 2023</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="portfolio-item">
+              <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1200&q=80" alt="Садові скульптури" />
+              <div className="portfolio-overlay">
+                <div className="portfolio-glass-card">
+                  <span className="portfolio-tag">Мистецтво</span>
+                  <h3 className="h3 portfolio-item-title">Прикраса саду скульптурами</h3>
+                  <p className="text-body portfolio-item-desc">Сумська область, 2023</p>
+                </div>
               </div>
             </div>
           </div>

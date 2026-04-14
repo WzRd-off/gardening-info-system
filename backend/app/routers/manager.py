@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, status
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import JSONResponse
@@ -22,9 +22,9 @@ from app.models.orders import Orders
 from app.models.services import Services
 from app.models.schedules import Schedules 
 
-from app.schemas.orders import OrderUpdate, OrderOut
+from app.schemas.orders import OrderUpdate, OrderOut, OrderResponse
 from app.schemas.services import ServiceRead 
-from app.schemas.schedules import ScheduleCreate, ScheduleOut
+from app.schemas.schedules import ScheduleCreate, ScheduleUpdate, ScheduleWithOrderOut
         
 
 router = APIRouter(
@@ -183,7 +183,7 @@ async def delete_service(
         'status': 'success', 'message': 'Сервіс успішно видалено'
     })
 
-@router.get("/orders", response_model=List[OrderOut])
+@router.get("/orders", response_model=List[OrderResponse])
 def get_all_orders(
     db: Session = Depends(get_db),
     current_manager: Users = Depends(get_current_manager)
@@ -192,7 +192,24 @@ def get_all_orders(
     Перегляд усіх замовлень у системі.
     Використовується менеджером для контролю ефективності та відстеження нових заявок.
     """
-    orders = db.query(Orders).all()
+    orders = db.execute(
+        select(Orders)
+        .options(
+            joinedload(Orders.user),
+            joinedload(Orders.status),
+            joinedload(Orders.plot),
+            joinedload(Orders.service),
+            joinedload(Orders.schedules)
+        )
+    ).unique().scalars().all()
+    # Додати schedule_id і scheduled_date для кожного замовлення
+    for order in orders:
+        if order.schedules:
+            order.schedule_id = order.schedules[0].id
+            order.scheduled_date = order.schedules[0].scheduled_time
+        else:
+            order.schedule_id = None
+            order.scheduled_date = order.execution_date
     return orders
 
 @router.patch("/orders/{order_id}")
@@ -207,6 +224,7 @@ def update_order_by_manager(
     Дозволяє менеджеру:
     - Призначити бригаду виконавців (team_id) на замовлення.
     - Додати спеціальні інструкції для бригади (manager_instructions).
+    - Оновити дату виконання (scheduled_date).
     """
     order = db.query(Orders).filter(Orders.id == order_id).first()
     if not order:
@@ -216,6 +234,8 @@ def update_order_by_manager(
         order.team_id = order_update.team_id
     if order_update.manager_instructions is not None:
         order.manager_instructions = order_update.manager_instructions
+    if order_update.scheduled_date is not None:
+        order.execution_date = order_update.scheduled_date
         
     db.commit()
     db.refresh(order)
@@ -232,11 +252,17 @@ def manage_schedule(
     """
     Додавання замовлення в розклад АБО перенесення дати (якщо розклад вже існує).
     """
+    # Отримуємо замовлення для синхронізації дати
+    order = db.query(Orders).filter(Orders.id == schedule_data.order_id).first()
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Замовлення не знайдено")
+    
     existing_schedule = db.query(Schedules).filter(Schedules.order_id == schedule_data.order_id).first()
     
     if existing_schedule:
         # Перенесення дати
         existing_schedule.scheduled_time = schedule_data.scheduled_time
+        order.execution_date = schedule_data.scheduled_time
         message = "Дату виконання замовлення успішно перенесено."
     else:
         # Створення нового запису в календарі
@@ -245,21 +271,57 @@ def manage_schedule(
             scheduled_time=schedule_data.scheduled_time
         )
         db.add(new_schedule)
+        order.execution_date = schedule_data.scheduled_time
         message = "Замовлення успішно додано до розкладу."
         
     db.commit()
     return {"status": "success", "message": message}
 
-@router.get("/schedules", response_model=List[ScheduleOut])
+@router.get("/schedules", response_model=List[ScheduleWithOrderOut])
 def get_schedules_for_calendar(
     db: Session = Depends(get_db),
     current_manager: Users = Depends(get_current_manager)
     ):
     """
-    Отримання всіх розкладів для відображення календаря на фронтенді.
-    """
-    schedules = db.query(Schedules).all()
+    Отримання всіх розкладів для відображення календаря на фронтенді.    Включає повну інформацію про замовлення (клієнт, послуга, адреса ділянки, статус).    """
+    schedules = db.execute(
+        select(Schedules)
+        .options(
+            joinedload(Schedules.order).joinedload(Orders.user),
+            joinedload(Schedules.order).joinedload(Orders.status),
+            joinedload(Schedules.order).joinedload(Orders.plot),
+            joinedload(Schedules.order).joinedload(Orders.service)
+        )
+    ).unique().scalars().all()
     return schedules
+
+@router.patch("/schedules/{schedule_id}")
+def update_schedule(
+    schedule_id: int,
+    update: ScheduleUpdate,
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+):
+    """
+    Оновлення розкладу (дати виконання).
+    """
+    schedule = db.get(Schedules, schedule_id)
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Розклад не знайдено")
+    
+    update_data = update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(schedule, key, value)
+    
+    # Синхронізуємо execution_date в замовленні
+    if 'scheduled_time' in update_data:
+        order = db.query(Orders).filter(Orders.id == schedule.order_id).first()
+        if order:
+            order.execution_date = update_data['scheduled_time']
+    
+    db.commit()
+    db.refresh(schedule)
+    return schedule
 
 @router.get("/teams/{team_id}/workload")
 def get_team_workload(

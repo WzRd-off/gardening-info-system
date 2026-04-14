@@ -11,39 +11,96 @@ export function TaskCard({ order, onStatusChange, updating }) {
   const isDone = status.id === 4;
 
   const availableStatuses = TEAM_STATUSES.filter(s => s.id !== 1);
+  const formattedDate = order.scheduled_time 
+    ? new Date(order.scheduled_time).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'Не встановлена';
 
   return (
     <div className="team-task-card" style={{ borderLeftColor: stripeColor, opacity: isDone ? 0.75 : 1 }}>
-      {/* Header row */}
+      {/* Header with service title and status */}
       <div className="team-task-header">
         <div className="team-task-content">
           <h3 className="team-task-title">
             {order.service?.name ?? `Послуга #${order.service_id}`}
           </h3>
-          <div className="team-task-meta">
-            <span className="team-task-meta-item">{Icons.pin} {order.plot?.address ?? `Ділянка #${order.plot_id}`}</span>
-            {order.scheduled_date && (
-              <span className="team-task-meta-item">{Icons.calendar} {new Date(order.scheduled_date).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <div className="team-task-order-id">Замовлення #{order.id}</div>
+        </div>
+        <StatusBadge status={status} />
+      </div>
+
+      {/* Main information grid */}
+      <div className="team-task-info-grid">
+        {/* Client section */}
+        <div className="team-task-info-section">
+          <h4 className="team-task-section-title">{Icons.user} Клієнт</h4>
+          <div className="team-task-info-content">
+            <p className="team-task-info-value">{order.user?.username ?? order.user?.email ?? 'Невідомий клієнт'}</p>
+            {order.user?.phone && (
+              <p className="team-task-info-meta">
+                {Icons.phone} <a href={`tel:${order.user.phone}`} className="team-task-phone">{order.user.phone}</a>
+              </p>
             )}
             {order.user?.email && (
-              <span className="team-task-meta-item">{Icons.user} {order.user.email}</span>
+              <p className="team-task-info-meta">✉ {order.user.email}</p>
             )}
           </div>
         </div>
-        <StatusBadge status={status} />
+
+        {/* Location section */}
+        <div className="team-task-info-section">
+          <h4 className="team-task-section-title">{Icons.pin} Локація</h4>
+          <div className="team-task-info-content">
+            <p className="team-task-info-value">{order.plot?.address ?? `Ділянка #${order.plot_id}`}</p>
+            {order.plot?.area && (
+              <p className="team-task-info-meta">Площа: {order.plot.area} м²</p>
+            )}
+            {order.plot?.features && (
+              <p className="team-task-info-meta">Характеристики: {order.plot.features}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Execution date section */}
+        <div className="team-task-info-section">
+          <h4 className="team-task-section-title">{Icons.calendar} Дата виконання</h4>
+          <div className="team-task-info-content">
+            <p className="team-task-info-value">{formattedDate}</p>
+            {order.execution_date && order.scheduled_time && (
+              <p className="team-task-info-meta">
+                Запланований термін виконання
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Price section */}
+        {order.total_price && (
+          <div className="team-task-info-section">
+            <h4 className="team-task-section-title">💰 Вартість</h4>
+            <div className="team-task-info-content">
+              <p className="team-task-info-value">{order.total_price} грн.</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Manager instructions */}
       {order.manager_instructions && (
         <div className="team-task-instructions">
           <span className="team-task-instructions-icon">{Icons.note}</span>
-          <p className="team-task-instructions-text">{order.manager_instructions}</p>
+          <div>
+            <p className="team-task-instructions-title">Інструкції менеджера</p>
+            <p className="team-task-instructions-text">{order.manager_instructions}</p>
+          </div>
         </div>
       )}
 
-      {/* Comment */}
+      {/* Comment from customer */}
       {order.comment && (
-        <p className="team-task-comment">Коментар клієнта: {order.comment}</p>
+        <div className="team-task-comment-box">
+          <p className="team-task-comment-title">💬 Коментар клієнта</p>
+          <p className="team-task-comment-text">{order.comment}</p>
+        </div>
       )}
 
       {/* Status change — collapse toggle */}
@@ -53,7 +110,7 @@ export function TaskCard({ order, onStatusChange, updating }) {
             onClick={() => setOpen(v => !v)}
             className="team-task-toggle-btn"
           >
-            {open ? Icons.chevronDown : Icons.chevronDown}
+            {open ? Icons.chevronUp : Icons.chevronDown}
             {open ? 'Сховати статуси' : 'Змінити статус'}
           </button>
 
@@ -86,9 +143,7 @@ export function TaskCard({ order, onStatusChange, updating }) {
 
       {isDone && (
         <div className="team-task-done">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+          {Icons.check}
           <span>Замовлення виконано</span>
         </div>
       )}

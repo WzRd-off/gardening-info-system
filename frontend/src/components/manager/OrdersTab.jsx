@@ -61,12 +61,23 @@ export default function OrdersTab() {
   const saveDate = async () => {
     setSaving(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/manager/schedules`, {
-        method: 'POST',
-        headers: jsonHeaders(),
-        body: JSON.stringify({ order_id: dateModal.id, scheduled_date: dateValue }),
-      });
-      if (!response.ok) throw new Error((await response.json()).detail);
+      if (dateModal.schedule_id) {
+        // Оновити існуючий розклад
+        const response = await fetch(`${API_BASE_URL}/manager/schedules/${dateModal.schedule_id}`, {
+          method: 'PATCH',
+          headers: jsonHeaders(),
+          body: JSON.stringify({ scheduled_time: dateValue + 'T00:00:00' }),
+        });
+        if (!response.ok) throw new Error((await response.json()).detail);
+      } else {
+        // Створити новий розклад
+        const response = await fetch(`${API_BASE_URL}/manager/schedules`, {
+          method: 'POST',
+          headers: jsonHeaders(),
+          body: JSON.stringify({ order_id: dateModal.id, scheduled_time: dateValue + 'T00:00:00' }),
+        });
+        if (!response.ok) throw new Error((await response.json()).detail);
+      }
       setDateModal(null);
       fetchAll();
     } catch (e) {
@@ -108,10 +119,26 @@ export default function OrdersTab() {
                   <span className="mgr-order-card__status"><StatusBadge status={order.status?.name ?? order.status} /></span>
                 </div>
                 <div className="mgr-order-card__meta">
-                  <span className="mgr-meta-item">{Icon.user} {order.user?.email ?? `Клієнт #${order.user_id}`}</span>
-                  <span className="mgr-meta-item">{Icon.pin} {order.plot?.address ?? `Ділянка #${order.plot_id}`}</span>
-                  {order.scheduled_date && <span className="mgr-meta-item">{Icon.calendar} {new Date(order.scheduled_date).toLocaleDateString('uk-UA')}</span>}
-                  {order.team && <span className="mgr-meta-item">{Icon.users} {order.team.name}</span>}
+                  {/* Клієнт */}
+                  <span className="mgr-meta-item">
+                    {Icon.user} {order.user?.username ?? order.user?.email ?? `Клієнт #${order.user_id}`}
+                  </span>
+                  {/* Адреса ділянки */}
+                  <span className="mgr-meta-item">
+                    {Icon.pin} {order.plot?.address ?? `Ділянка #${order.plot_id}`}
+                  </span>
+                  {/* Дата виконання */}
+                  {order.scheduled_date && (
+                    <span className="mgr-meta-item">
+                      {Icon.calendar} {new Date(order.scheduled_date).toLocaleDateString('uk-UA')}
+                    </span>
+                  )}
+                  {/* Бригада */}
+                  {order.team && (
+                    <span className="mgr-meta-item">
+                      {Icon.users} {order.team.name}
+                    </span>
+                  )}
                 </div>
                 {order.comment && <p className="mgr-order-card__comment">{order.comment}</p>}
                 {order.manager_instructions && (

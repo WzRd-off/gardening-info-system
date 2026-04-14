@@ -72,9 +72,12 @@ export default function OrderModal({ service, onClose, onSuccess }) {
         method: 'POST',
         headers: jsonHeaders(),
         body: JSON.stringify({
-          plot_id:    selectedPlot.id,
-          service_id: selectedService.id,
-          comment:    comment.trim() || undefined,
+          plot_id:        selectedPlot.id,
+          service_id:     selectedService.id,
+          execution_date: date,
+          regularity:     repeat,
+          total_price: estimatedCost,
+          comment:        comment.trim() || undefined,
         }),
       });
       if (!orderRes.ok) throw new Error((await orderRes.json()).detail || 'Помилка створення замовлення');
@@ -82,7 +85,7 @@ export default function OrderModal({ service, onClose, onSuccess }) {
       await fetch(`${API_BASE_URL}/manager/schedules`, {
         method: 'POST',
         headers: jsonHeaders(),
-        body: JSON.stringify({ order_id: order.id, scheduled_date: date }),
+        body: JSON.stringify({ order_id: order.id, scheduled_time: date + 'T00:00:00' }),
       });
       onSuccess();
     } catch (e) { setError(e.message); }

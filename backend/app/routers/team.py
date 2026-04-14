@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select, func
 from typing import List
 
@@ -13,7 +13,7 @@ from app.models.payments import Payments
 from app.models.services import Services
 from app.models.teams import Teams
 
-from app.schemas.orders import OrderOut
+from app.schemas.orders import OrderOut, OrderResponse
 from app.schemas.payments import PaymentOut
 from app.schemas.teams import TeamCreate, TeamRead
 
@@ -48,11 +48,20 @@ def create_team(team_data: TeamCreate, db: Session = Depends(get_db)):
 def get_all_teams(db: Session = Depends(get_db)):
     return db.execute(select(Teams)).scalars().all()
 
-@router.get("/orders", response_model=List[OrderOut])
+@router.get("/orders", response_model=List[OrderResponse])
 def get_team_orders(db: Session = Depends(get_db), current_user: Users = Depends(get_current_team)):
     if not current_user.team_id:
         return []
-    return db.query(Orders).filter(Orders.team_id == current_user.team_id).all()
+    return db.execute(
+        select(Orders)
+        .where(Orders.team_id == current_user.team_id)
+        .options(
+            joinedload(Orders.user),
+            joinedload(Orders.status),
+            joinedload(Orders.plot),
+            joinedload(Orders.service)
+        )
+    ).unique().scalars().all()
 
 @router.patch("/orders/{order_id}/status", response_model=OrderOut)
 def update_order_status(

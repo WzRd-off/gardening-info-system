@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Icon } from './icons';
-import { authHeaders } from './constants';
+import { authHeaders, CATEGORIES } from './constants';
 import { Spinner, EmptyState, Modal, Field } from './shared';
 import { API_BASE_URL } from '../../services/config';
 
@@ -13,8 +13,6 @@ export default function ServicesTab() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef();
-
-  const CATEGORIES = ["Система поливу", "Садівництво та догляд", "Ландшафний дизайн", "Екологічні матеріали", "Газон"];
 
   const fetchServices = useCallback(async () => {
     setLoading(true);

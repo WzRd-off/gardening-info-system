@@ -4,11 +4,13 @@ import { Icon } from '../components/manager/icons';
 import ServicesTab from '../components/manager/ServicesTab';
 import OrdersTab from '../components/manager/OrdersTab';
 import TeamsTab from '../components/manager/TeamsTab';
+import CalendarTab from '../components/manager/CalendarTab';
 
 const TABS = [
   { id: 'services', label: 'Послуги', icon: Icon.leaf },
   { id: 'orders', label: 'Замовлення', icon: Icon.list },
   { id: 'teams', label: 'Бригади', icon: Icon.users },
+  { id: 'calendar', label: 'Календар', icon: Icon.calendar },
 ];
 
 export default function ManagerPage() {
@@ -62,6 +64,7 @@ export default function ManagerPage() {
           {activeTab === 'services' && <ServicesTab />}
           {activeTab === 'orders' && <OrdersTab />}
           {activeTab === 'teams' && <TeamsTab />}
+          {activeTab === 'calendar' && <CalendarTab />}
         </main>
       </div>
     </div>
