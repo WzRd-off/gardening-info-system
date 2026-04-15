@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 const IconUser = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -23,14 +24,10 @@ const NAV_LINKS = [
 ];
 
 export default function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const menuRef = useRef(null);
-
-  useEffect(() => {
-    setIsLoggedIn(!!localStorage.getItem('jwt'));
-  }, []);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -81,7 +78,7 @@ export default function Header() {
         <div className="header-cta-wrapper">
 
           {/* Кнопка профіль / увійти — тільки на десктопі */}
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <Link
               to="/profile"
               className={`header-user-btn header-user-btn--desktop${isActive('/profile') ? ' header-user-btn--active' : ''}`}
@@ -128,7 +125,7 @@ export default function Header() {
 
           <div className="header-mobile-menu__divider" />
 
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <Link to="/profile" className="header-mobile-menu__user">
               <IconUser /> Профіль
             </Link>

@@ -1,5 +1,7 @@
-export const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('jwt')}` });
-export const jsonHeaders = () => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('jwt')}` });
+import { getAuthHeaders, getJsonHeaders } from '../../services/api';
+
+export const authHeaders = getAuthHeaders;
+export const jsonHeaders = getJsonHeaders;
 
 export const STATUS_LIST = [
   { id: 1, name: 'Отримано',              color: '#2196F3', bg: '#E3F2FD' },

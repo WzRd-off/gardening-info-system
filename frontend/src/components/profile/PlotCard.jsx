@@ -1,11 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { API_BASE_URL } from '../../services/config';
-
-const authHeaders = () => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-});
+import * as profileService from '../../services/profileService';
 
 export function PlotCard({ plot, onRefresh }) {
   const [plants, setPlants] = useState([]);
@@ -16,9 +11,8 @@ export function PlotCard({ plot, onRefresh }) {
   const fetchPlants = useCallback(async () => {
     setLoadingPlants(true);
     try {
-      const r = await fetch(`${API_BASE_URL}/profile/my_plots/${plot.id}/plants`, { headers: authHeaders() });
-      const d = await r.json();
-      setPlants(Array.isArray(d) ? d : []);
+      const data = await profileService.getPlantsOnPlot(plot.id);
+      setPlants(Array.isArray(data) ? data : []);
     } catch { }
     finally { setLoadingPlants(false); }
   }, [plot.id]);
@@ -29,26 +23,18 @@ export function PlotCard({ plot, onRefresh }) {
     if (!newPlant.trim()) return;
     setAddingPlant(true);
     try {
-      const r = await fetch(`${API_BASE_URL}/profile/my_plots/${plot.id}/plants`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ name: newPlant.trim() }),
-      });
-      if (!r.ok) throw new Error();
+      await profileService.addPlantToPlot(plot.id, newPlant.trim());
       setNewPlant('');
-      fetchPlants();
+      await fetchPlants();
     } catch { }
     finally { setAddingPlant(false); }
   };
 
   const handleDeletePlant = async (plantId) => {
     try {
-      await fetch(`${API_BASE_URL}/profile/my_plots/${plot.id}/plants/${plantId}`, {
-        method: 'DELETE',
-        headers: authHeaders(),
-      });
-      fetchPlants();
-    } catch {  }
+      await profileService.deletePlantFromPlot(plot.id, plantId);
+      await fetchPlants();
+    } catch { }
   };
 
   return (

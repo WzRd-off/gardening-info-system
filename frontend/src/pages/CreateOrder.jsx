@@ -7,8 +7,7 @@ import FilterSidebar from '../components/order/FilterSidebar';
 import ServiceCard from '../components/order/ServiceCard';
 import OrderModal from '../components/order/OrderModal';
 import SuccessScreen from '../components/order/SuccessScreen';
-import { authHeaders } from '../components/order/api';
-import { API_BASE_URL } from '../services/config';
+import { managerAPI } from '../services/api';
 
 // Автоматично визначає категорію за назвою послуги
 function inferCategory(name) {
@@ -38,11 +37,16 @@ export default function CreateOrderPage() {
 
   // Завантаження каталогу
   useEffect(() => {
-    fetch(`${API_BASE_URL}/manager/services`, { headers: authHeaders() })
-      .then(r => r.json())
-      .then(d => setServices(Array.isArray(d) ? d : []))
-      .catch(() => setError('Не вдалося завантажити каталог послуг'))
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const data = await managerAPI.getServices();
+        setServices(Array.isArray(data) ? data : []);
+      } catch {
+        setError('Не вдалося завантажити каталог послуг');
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   // Передвибір послуги через URL ?service_id=

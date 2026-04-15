@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Spinner, EmptyState, StatusBadge } from './CommonComponents';
-import { API_BASE_URL } from '../../services/config';
-
-const authHeaders = () => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-});
+import { ordersAPI } from '../../services/api';
 
 export function HistoryTab() {
   const [orders, setOrders] = useState([]);
@@ -14,9 +9,8 @@ export function HistoryTab() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/orders/my_orders`, { headers: authHeaders() })
-      .then(r => r.json())
-      .then(d => setOrders(Array.isArray(d) ? d : []))
+    ordersAPI.getMyOrders()
+      .then(data => setOrders(Array.isArray(data) ? data : []))
       .catch(() => setError('Не вдалося завантажити замовлення'))
       .finally(() => setLoading(false));
   }, []);

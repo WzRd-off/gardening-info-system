@@ -5,23 +5,22 @@ import Footer from '../components/layout/Footer';
 import { Icons } from '../components/team/Icons.jsx';
 import { TasksTab } from '../components/team/TasksTab';
 import { FinanceTab } from '../components/team/FinanceTab';
-import { authHeaders } from '../components/team/utils';
-import { API_BASE_URL } from '../services/config';
+import { useAuth } from '../hooks/useAuth';
+import { teamsAPI } from '../services/api';
 
 export default function TeamPage() {
   const [activeTab, setActiveTab] = useState('tasks');
   const [teamInfo, setTeamInfo] = useState(null);
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!localStorage.getItem('jwt')) { navigate('/auth'); return; }
-    fetch(`${API_BASE_URL}/teams`, { headers: authHeaders() })
-      .then(r => r.json())
+    teamsAPI.getTeamInfo()
       .then(d => { if (Array.isArray(d) && d.length) setTeamInfo(d[0]); })
       .catch(() => {});
-  }, [navigate]);
+  }, []);
 
-  const handleLogout = () => { localStorage.removeItem('jwt'); navigate('/auth'); };
+  const handleLogout = () => { logout(); navigate('/auth'); };
 
   const TABS = [
     { id: 'tasks', label: 'Завдання', icon: Icons.tasks },

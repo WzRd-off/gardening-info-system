@@ -1,12 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Spinner, EmptyState, Field } from './CommonComponents';
 import { PlotCard } from './PlotCard';
-import { API_BASE_URL } from '../../services/config';
-
-const authHeaders = () => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-});
+import * as profileService from '../../services/profileService';
 
 export function PlotsTab() {
   const [plots, setPlots] = useState([]);
@@ -19,10 +14,10 @@ export function PlotsTab() {
   const fetchPlots = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${API_BASE_URL}/profile/my_plots`, { headers: authHeaders() });
-      const d = await r.json();
-      setPlots(Array.isArray(d) ? d : []);
-    } catch { setError('Не вдалося завантажити ділянки'); }
+      const data = await profileService.getMyPlots();
+      setPlots(Array.isArray(data) ? data : []);
+      setError('');
+    } catch (err) { setError('Не вдалося завантажити ділянки'); }
     finally { setLoading(false); }
   }, []);
 
@@ -32,16 +27,11 @@ export function PlotsTab() {
     if (!newPlot.address.trim() || !newPlot.area) return;
     setAddingPlot(true);
     try {
-      const r = await fetch(`${API_BASE_URL}/profile/add_plot`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ address: newPlot.address, area: parseFloat(newPlot.area), features: newPlot.features }),
-      });
-      if (!r.ok) throw new Error();
+      await profileService.addPlot(newPlot.address, parseFloat(newPlot.area), newPlot.features);
       setNewPlot({ address: '', area: '', features: '' });
       setShowAddPlot(false);
-      fetchPlots();
-    } catch { setError('Не вдалося додати ділянку'); }
+      await fetchPlots();
+    } catch (err) { setError('Не вдалося додати ділянку'); }
     finally { setAddingPlot(false); }
   };
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icons } from '../order/Icons';
-import { authHeaders, jsonHeaders } from '../order/api';
-import { API_BASE_URL } from '../../services/config';
+import { useAuth } from '../../hooks/useAuth';
+import { profileAPI, managerAPI, ordersAPI } from '../../services/api';
 
 
 const REPEAT_OPTIONS = [
@@ -30,21 +30,26 @@ export default function OrderModal({ service, onClose, onSuccess }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   // Завантаження ділянок і послуг
   useEffect(() => {
-    if (!localStorage.getItem('jwt')) { navigate('/auth'); return; }
-    Promise.all([
-      fetch(`${API_BASE_URL}/profile/my_plots`, { headers: authHeaders() }).then(r => r.json()),
-      fetch(`${API_BASE_URL}/manager/services`, { headers: authHeaders() }).then(r => r.json()),
-    ])
-      .then(([p, s]) => {
+    if (!isAuthenticated) { navigate('/auth'); return; }
+    (async () => {
+      try {
+        const [p, s] = await Promise.all([
+          profileAPI.getMyPlots(),
+          managerAPI.getServices(),
+        ]);
         setPlots(Array.isArray(p) ? p : []);
         setServices(Array.isArray(s) ? s : []);
-      })
-      .catch(() => setError('Не вдалося завантажити дані'))
-      .finally(() => setLoadingData(false));
-  }, [navigate]);
+      } catch {
+        setError('Не вдалося завантажити дані');
+      } finally {
+        setLoadingData(false);
+      }
+    })();
+  }, [navigate, isAuthenticated]);
 
   // Закриття по Escape
   useEffect(() => {
@@ -68,24 +73,17 @@ export default function OrderModal({ service, onClose, onSuccess }) {
     if (!date)            { setError('Вкажіть дату виконання'); return; }
     setSubmitting(true); setError('');
     try {
-      const orderRes = await fetch(`${API_BASE_URL}/orders/`, {
-        method: 'POST',
-        headers: jsonHeaders(),
-        body: JSON.stringify({
-          plot_id:        selectedPlot.id,
-          service_id:     selectedService.id,
-          execution_date: date,
-          regularity:     repeat,
-          total_price: estimatedCost,
-          comment:        comment.trim() || undefined,
-        }),
+      const order = await ordersAPI.createOrder({
+        plot_id:        selectedPlot.id,
+        service_id:     selectedService.id,
+        execution_date: date,
+        regularity:     repeat,
+        total_price: estimatedCost,
+        comment:        comment.trim() || undefined,
       });
-      if (!orderRes.ok) throw new Error((await orderRes.json()).detail || 'Помилка створення замовлення');
-      const order = await orderRes.json();
-      await fetch(`${API_BASE_URL}/manager/schedules`, {
-        method: 'POST',
-        headers: jsonHeaders(),
-        body: JSON.stringify({ order_id: order.id, scheduled_time: date + 'T00:00:00' }),
+      await managerAPI.createSchedule({
+        order_id: order.id,
+        scheduled_time: date + 'T00:00:00'
       });
       onSuccess();
     } catch (e) { setError(e.message); }

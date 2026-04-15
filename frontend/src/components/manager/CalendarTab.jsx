@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-import { authHeaders, jsonHeaders, statusMeta, MONTH_UA, WEEKDAYS, STATUS_LIST } from './constants';
+import { statusMeta, MONTH_UA, WEEKDAYS, STATUS_LIST } from './constants';
 import { Icon } from './icons';
-import { API_BASE_URL } from '../../services/config';
+import { managerAPI, teamsAPI } from '../../services/api';
 
 // YYYY-MM-DD для date object
 function toDateStr(date) {
@@ -67,12 +67,7 @@ function DayOrdersModal({ date, orders, teams, allOrders, onClose, onTeamAssigne
   const handleTeamChange = async (order, newTeamId) => {
     setPatching(order.id);
     try {
-      const r = await fetch(`${API_BASE_URL}/manager/orders/${order.id}`, {
-        method: 'PATCH',
-        headers: jsonHeaders(),
-        body: JSON.stringify({ team_id: newTeamId ? Number(newTeamId) : null }),
-      });
-      if (!r.ok) throw new Error((await r.json()).detail || 'Помилка');
+      await managerAPI.updateOrderStatus(order.id, { team_id: newTeamId ? Number(newTeamId) : null });
       setLocalOrders(prev =>
         prev.map(o => o.id === order.id ? { ...o, team_id: newTeamId ? Number(newTeamId) : null } : o)
       );
@@ -207,13 +202,10 @@ export default function CalendarTab() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [schRes, ordRes, teamRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/manager/schedules`, { headers: authHeaders() }),
-        fetch(`${API_BASE_URL}/manager/orders`,   { headers: authHeaders() }),
-        fetch(`${API_BASE_URL}/teams/`,           { headers: authHeaders() }),
-      ]);
       const [schData, ordData, teamData] = await Promise.all([
-        schRes.json(), ordRes.json(), teamRes.json(),
+        managerAPI.getSchedules(),
+        managerAPI.getOrders(),
+        teamsAPI.getAll(),
       ]);
       setSchedules(Array.isArray(schData)  ? schData  : []);
       setOrders(   Array.isArray(ordData)  ? ordData  : []);

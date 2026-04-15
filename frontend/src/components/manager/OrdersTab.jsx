@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { STATUS_LIST, authHeaders, jsonHeaders } from './constants';
+import { STATUS_LIST } from './constants';
 import { Spinner, EmptyState, Modal, Field, StatusBadge } from './shared';
 import { Icon } from './icons';
-import { API_BASE_URL } from '../../services/config';
+import { managerAPI, teamsAPI } from '../../services/api';
 
 export default function OrdersTab() {
   const [orders, setOrders] = useState([]);
@@ -20,19 +20,18 @@ export default function OrdersTab() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (filterStatus) params.set('status_id', filterStatus);
-      if (filterTeam) params.set('team_id', filterTeam);
+      const params = {};
+      if (filterStatus) params.status_id = filterStatus;
+      if (filterTeam) params.team_id = filterTeam;
 
-      const [ordersResponse, teamsResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/manager/orders?${params}`, { headers: authHeaders() }),
-        fetch(`${API_BASE_URL}/teams/`, { headers: authHeaders() }),
+      const [orderData, teamData] = await Promise.all([
+        managerAPI.getOrders(params),
+        teamsAPI.getAll(),
       ]);
-
-      const [orderData, teamData] = await Promise.all([ordersResponse.json(), teamsResponse.json()]);
       setOrders(Array.isArray(orderData) ? orderData : []);
       setTeams(Array.isArray(teamData) ? teamData : []);
-    } catch {
+      setError('');
+    } catch (err) {
       setError('Помилка завантаження');
     } finally {
       setLoading(false);
@@ -44,13 +43,9 @@ export default function OrdersTab() {
   const patch = async (id, body) => {
     setSaving(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/manager/orders/${id}`, {
-        method: 'PATCH',
-        headers: jsonHeaders(),
-        body: JSON.stringify(body),
-      });
-      if (!response.ok) throw new Error((await response.json()).detail);
-      fetchAll();
+      await managerAPI.updateOrderStatus(id, body);
+      await fetchAll();
+      setError('');
     } catch (e) {
       setError(e.message || 'Помилка');
     } finally {
@@ -62,24 +57,13 @@ export default function OrdersTab() {
     setSaving(true);
     try {
       if (dateModal.schedule_id) {
-        // Оновити існуючий розклад
-        const response = await fetch(`${API_BASE_URL}/manager/schedules/${dateModal.schedule_id}`, {
-          method: 'PATCH',
-          headers: jsonHeaders(),
-          body: JSON.stringify({ scheduled_time: dateValue + 'T00:00:00' }),
-        });
-        if (!response.ok) throw new Error((await response.json()).detail);
+        await managerAPI.updateSchedule(dateModal.schedule_id, { scheduled_time: dateValue + 'T00:00:00' });
       } else {
-        // Створити новий розклад
-        const response = await fetch(`${API_BASE_URL}/manager/schedules`, {
-          method: 'POST',
-          headers: jsonHeaders(),
-          body: JSON.stringify({ order_id: dateModal.id, scheduled_time: dateValue + 'T00:00:00' }),
-        });
-        if (!response.ok) throw new Error((await response.json()).detail);
+        await managerAPI.createSchedule({ order_id: dateModal.id, scheduled_time: dateValue + 'T00:00:00' });
       }
       setDateModal(null);
-      fetchAll();
+      await fetchAll();
+      setError('');
     } catch (e) {
       setError(e.message || 'Помилка');
     } finally {

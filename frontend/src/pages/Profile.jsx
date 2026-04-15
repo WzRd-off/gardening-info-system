@@ -1,32 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { ProfileTab } from '../components/profile/ProfileTab';
 import { PlotsTab } from '../components/profile/PlotsTab';
 import { HistoryTab } from '../components/profile/HistoryTab';
-import { API_BASE_URL } from '../services/config';
-
-const authHeaders = () => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-});
+import { useAuth } from '../hooks/useAuth';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('profile');
-  const [user, setUser] = useState(null);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!localStorage.getItem('jwt')) { navigate('/auth'); return; }
-    fetch(`${API_BASE_URL}/profile/my_profile`, { headers: authHeaders() })
-      .then(r => { if (r.status === 401) { localStorage.removeItem('jwt'); navigate('/auth'); } return r.json(); })
-      .then(d => setUser(d))
-      .catch(() => {});
-  }, [navigate]);
-
   const handleLogout = () => {
-    localStorage.removeItem('jwt');
+    logout();
     navigate('/auth');
   };
 

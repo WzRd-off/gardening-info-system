@@ -1,41 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Field } from './CommonComponents';
 import { Spinner } from './CommonComponents';
-import { API_BASE_URL } from '../../services/config';
-
-const authHeaders = () => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-});
+import { useAuth } from '../../hooks/useAuth';
+import * as profileService from '../../services/profileService';
 
 export function ProfileTab() {
+  const { user, isLoading: authLoading } = useAuth();
   const [form, setForm] = useState({ username: '', phone: '' });
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!authLoading);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/profile/my_profile`, { headers: authHeaders() })
-      .then(r => r.json())
-      .then(d => {
-        setForm({ username: d.username ?? '', phone: d.phone ?? '' });
-        setEmail(d.email ?? '');
-      })
-      .catch(() => setError('Не вдалося завантажити профіль'))
-      .finally(() => setLoading(false));
-  }, []);
+    if (!user) return;
+    setForm({ username: user.username ?? '', phone: user.phone ?? '' });
+    setEmail(user.email ?? '');
+    setLoading(false);
+  }, [user]);
 
   const handleSave = async () => {
     setSaving(true); setError(''); setSaved(false);
     try {
-      const r = await fetch(`${API_BASE_URL}/profile/update_profile`, {
-        method: 'PUT',
-        headers: authHeaders(),
-        body: JSON.stringify(form),
-      });
-      if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Помилка збереження'); }
+      await profileService.updateProfile({ username: form.username, phone: form.phone });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e) { setError(e.message); }

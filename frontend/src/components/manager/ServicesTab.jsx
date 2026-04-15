@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Icon } from './icons';
-import { authHeaders, CATEGORIES } from './constants';
+import { CATEGORIES } from './constants';
 import { Spinner, EmptyState, Modal, Field } from './shared';
+import { managerAPI } from '../../services/api';
 import { API_BASE_URL } from '../../services/config';
 
 export default function ServicesTab() {
@@ -17,9 +18,10 @@ export default function ServicesTab() {
   const fetchServices = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/manager/services`, { headers: authHeaders() });
-      setServices(await response.json());
-    } catch {
+      const data = await managerAPI.getServices();
+      setServices(Array.isArray(data) ? data : []);
+      setError('');
+    } catch (err) {
       setError('Не вдалося завантажити послуги');
     } finally {
       setLoading(false);
@@ -58,18 +60,13 @@ export default function ServicesTab() {
       formData.append('category', form.category);
       if (form.image) formData.append('upload_file', form.image);
 
-      const url = modal === 'edit'
-        ? `${API_BASE_URL}/manager/services/${selected.id}`
-        : `${API_BASE_URL}/manager/services`;
-      const response = await fetch(url, {
-        method: modal === 'edit' ? 'PUT' : 'POST',
-        headers: authHeaders(),
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error((await response.json()).detail || 'Помилка');
+      if (modal === 'edit') {
+        await managerAPI.updateService(selected.id, formData);
+      } else {
+        await managerAPI.createService(formData);
+      }
       setModal(false);
-      fetchServices();
+      await fetchServices();
     } catch (e) {
       setError(e.message);
     } finally {
@@ -80,10 +77,11 @@ export default function ServicesTab() {
   const handleDelete = async id => {
     if (!window.confirm('Видалити послугу?')) return;
     try {
-      await fetch(`${API_BASE_URL}/manager/services/${id}`, { method: 'DELETE', headers: authHeaders() });
-      fetchServices();
+      await managerAPI.deleteService(id);
+      await fetchServices();
       setSelected(null);
-    } catch {
+      setError('');
+    } catch (err) {
       setError('Помилка видалення');
     }
   };

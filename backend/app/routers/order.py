@@ -101,7 +101,8 @@ async def create_order(
 
     db.add(new_order)
     db.commit()
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={'status': 'success', 'message': 'Замовлення створено'})
+    db.refresh(new_order)
+    return {'id': new_order.id, 'status': 'success', 'message': 'Замовлення створено'}
 
 # Оновлення замовлення (для менеджера)
 @router.put('/update_order/{order_id}')

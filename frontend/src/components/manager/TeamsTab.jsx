@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { authHeaders, jsonHeaders, statusMeta } from './constants';
+import { statusMeta } from './constants';
 import { Spinner, EmptyState, Modal, Field } from './shared';
 import { Icon } from './icons';
-import { API_BASE_URL } from '../../services/config';
+import { managerAPI, teamsAPI } from '../../services/api';
 
 export default function TeamsTab() {
   const [teams, setTeams] = useState([]);
@@ -16,14 +16,14 @@ export default function TeamsTab() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [teamsResponse, ordersResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/teams/`, { headers: authHeaders() }),
-        fetch(`${API_BASE_URL}/manager/orders`, { headers: authHeaders() }),
+      const [teamData, orderData] = await Promise.all([
+        teamsAPI.getAll(),
+        managerAPI.getOrders(),
       ]);
-      const [teamData, orderData] = await Promise.all([teamsResponse.json(), ordersResponse.json()]);
       setTeams(Array.isArray(teamData) ? teamData : []);
       setOrders(Array.isArray(orderData) ? orderData : []);
-    } catch {
+      setError('');
+    } catch (err) {
       setError('Помилка завантаження');
     } finally {
       setLoading(false);
@@ -55,18 +55,10 @@ export default function TeamsTab() {
     setSaving(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/teams/`, {
-        method: 'POST',
-        headers: jsonHeaders(),
-        body: JSON.stringify({
-          name: newTeam.name,
-          email: newTeam.email,
-        }),
-      });
-      if (!response.ok) throw new Error((await response.json()).detail);
+      await teamsAPI.createTeam(newTeam.name, newTeam.email);
       setShowCreate(false);
       setNewTeam({ name: '', email: '' });
-      fetchAll();
+      await fetchAll();
     } catch (e) {
       setError(e.message);
     } finally {

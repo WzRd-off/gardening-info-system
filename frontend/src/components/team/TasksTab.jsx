@@ -4,8 +4,8 @@ import { Spinner } from './Spinner';
 import { EmptyState } from './EmptyState';
 import { TaskCard } from './TaskCard';
 import { TEAM_STATUSES } from './constants';
-import { authHeaders, jsonHeaders, resolveStatus } from './utils';
-import { API_BASE_URL } from '../../services/config';
+import { resolveStatus } from './utils';
+import { ordersAPI, teamsAPI } from '../../services/api';
 
 export function TasksTab() {
   const [orders, setOrders] = useState([]);
@@ -18,10 +18,8 @@ export function TasksTab() {
     setLoading(true);
     setError('');
     try {
-      const r = await fetch(`${API_BASE_URL}/teams/orders`, { headers: authHeaders() });
-      if (!r.ok) throw new Error('Помилка завантаження');
-      const d = await r.json();
-      setOrders(Array.isArray(d) ? d : []);
+      const data = await teamsAPI.getTeamOrders();
+      setOrders(Array.isArray(data) ? data : []);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -37,12 +35,7 @@ export function TasksTab() {
     setUpdating(orderId);
     setError('');
     try {
-      const r = await fetch(`${API_BASE_URL}/teams/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: jsonHeaders(),
-        body: JSON.stringify({ status_id: statusId }),
-      });
-      if (!r.ok) throw new Error((await r.json()).detail || 'Помилка оновлення статусу');
+      await teamsAPI.updateOrderStatus(orderId, statusId);
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status_id: statusId, status: TEAM_STATUSES.find(s => s.id === statusId) } : o));
     } catch (e) {
       setError(e.message);

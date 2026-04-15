@@ -1,13 +1,8 @@
 import { TEAM_STATUSES } from './constants';
+import { getAuthHeaders, getJsonHeaders } from '../../services/api';
 
-export const authHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-});
-
-export const jsonHeaders = () => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-});
+export const authHeaders = getAuthHeaders;
+export const jsonHeaders = getJsonHeaders;
 
 export function statusById(id) {
   return TEAM_STATUSES.find(s => s.id === id) || TEAM_STATUSES[0];
