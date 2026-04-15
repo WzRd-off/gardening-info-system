@@ -13,3 +13,4 @@ class Teams(Base):
     members = relationship("Users", back_populates="team", foreign_keys="[Users.team_id]") 
     orders = relationship("Orders", back_populates="team")
     schedules = relationship("Schedules", back_populates="team")
+    payments = relationship("Payments", back_populates="team")

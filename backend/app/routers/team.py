@@ -30,7 +30,8 @@ def create_team(team_data: TeamCreate, db: Session = Depends(get_db)):
     if existing_team:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Команда з такою назвою вже існує")
 
-    leader = db.query(Users).filter(Users.email == team_data.email).first()
+    stmt_leader = select(Users).where(Users.email == team_data.email)
+    leader = db.execute(stmt_leader).scalars().first()
     if not leader:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Лідер бригади не знайдений")
 
@@ -73,20 +74,24 @@ def update_order_status(
     if not current_user.team_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ви не належите до бригади")
 
-    order = db.query(Orders).filter(Orders.id == order_id, Orders.team_id == current_user.team_id).first()
+    stmt_order = select(Orders).where(Orders.id == order_id, Orders.team_id == current_user.team_id)
+    order = db.execute(stmt_order).scalars().first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Замовлення не знайдено")
 
     order.status_id = status_id
 
     if status_id == 4:
-        existing_payment = db.query(Payments).filter(Payments.order_id == order.id).first()
-        if not existing_payment:
-            service = db.query(Services).filter(Services.id == order.service_id).first()
-            if service:
+        stmt_payment = select(Payments).where(Payments.order_id == order.id)
+        existing_payment = db.execute(stmt_payment).scalars().first()
+        if order.total_price:
+            if existing_payment:
+                existing_payment.amount = order.total_price
+            else:
                 new_payment = Payments(
                     order_id=order.id,
-                    amount=service.price
+                    amount=order.total_price,
+                    team_id=order.team_id
                 )
                 db.add(new_payment)
 
@@ -99,11 +104,14 @@ def get_team_finance(db: Session = Depends(get_db), current_user: Users = Depend
     if not current_user.team_id:
         raise HTTPException(status_code=403, detail="Ви не належите до бригади")
 
-    payments_query = db.query(Payments).join(Orders).filter(Orders.team_id == current_user.team_id)
-    history = payments_query.all()
+    stmt_payments = select(Payments).where(Payments.team_id == current_user.team_id)
+    history = db.execute(stmt_payments).scalars().all()
     
-    total_amount = db.query(func.sum(Payments.amount)).join(Orders).filter(Orders.team_id == current_user.team_id).scalar() or 0.0
-    completed_orders_count = db.query(Orders).filter(Orders.team_id == current_user.team_id, Orders.status_id == 4).count()
+    stmt_total = select(func.sum(Payments.amount)).where(Payments.team_id == current_user.team_id)
+    total_amount = db.execute(stmt_total).scalar() or 0.0
+    
+    stmt_count = select(func.count()).select_from(Orders).where(Orders.team_id == current_user.team_id, Orders.status_id == 4)
+    completed_orders_count = db.execute(stmt_count).scalar()
 
     return {
         "team_id": current_user.team_id,

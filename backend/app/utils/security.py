@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from jose import jwt, JWTError
 
 from app.utils.database import get_db
@@ -27,7 +28,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except JWTError:
         raise credentials_exception
         
-    user = db.query(Users).filter(Users.id == int(user_id)).first()
+    stmt = select(Users).where(Users.id == int(user_id))
+    user = db.execute(stmt).scalars().first()
     
     if user is None:
         raise credentials_exception
@@ -35,7 +37,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 def get_current_manager(current_user: Users = Depends(get_current_user), db: Session = Depends(get_db)):
-    role = db.query(Roles).filter(Roles.id == current_user.role_id).first()
+    stmt = select(Roles).where(Roles.id == current_user.role_id)
+    role = db.execute(stmt).scalars().first()
     if not role or role.name != "Менеджер":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, 
@@ -44,7 +47,8 @@ def get_current_manager(current_user: Users = Depends(get_current_user), db: Ses
     return current_user
 
 def get_current_team(current_user: Users = Depends(get_current_user), db: Session = Depends(get_db)):
-    role = db.query(Roles).filter(Roles.id == current_user.role_id).first()
+    stmt = select(Roles).where(Roles.id == current_user.role_id)
+    role = db.execute(stmt).scalars().first()
     if not role or role.name != "Бригада":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, 

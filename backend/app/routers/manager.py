@@ -1,10 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, status
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select, cast, Date
 from typing import List, Optional, Annotated
 from decimal import Decimal
@@ -20,10 +16,10 @@ from app.utils.security import get_current_manager, get_current_user
 from app.models.users import Users
 from app.models.orders import Orders
 from app.models.services import Services
-from app.models.schedules import Schedules 
+from app.models.schedules import Schedules
 
 from app.schemas.orders import OrderUpdate, OrderOut, OrderResponse
-from app.schemas.services import ServiceRead 
+from app.schemas.services import ServiceRead
 from app.schemas.schedules import ScheduleCreate, ScheduleUpdate, ScheduleWithOrderOut
         
 
@@ -226,7 +222,8 @@ def update_order_by_manager(
     - Додати спеціальні інструкції для бригади (manager_instructions).
     - Оновити дату виконання (scheduled_date).
     """
-    order = db.query(Orders).filter(Orders.id == order_id).first()
+    stmt = select(Orders).where(Orders.id == order_id)
+    order = db.execute(stmt).scalars().first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Замовлення не знайдено")
     
@@ -253,11 +250,13 @@ def manage_schedule(
     Додавання замовлення в розклад АБО перенесення дати (якщо розклад вже існує).
     """
     # Отримуємо замовлення для синхронізації дати
-    order = db.query(Orders).filter(Orders.id == schedule_data.order_id).first()
+    stmt_order = select(Orders).where(Orders.id == schedule_data.order_id)
+    order = db.execute(stmt_order).scalars().first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Замовлення не знайдено")
     
-    existing_schedule = db.query(Schedules).filter(Schedules.order_id == schedule_data.order_id).first()
+    stmt_schedule = select(Schedules).where(Schedules.order_id == schedule_data.order_id)
+    existing_schedule = db.execute(stmt_schedule).scalars().first()
     
     if existing_schedule:
         # Перенесення дати
@@ -315,7 +314,8 @@ def update_schedule(
     
     # Синхронізуємо execution_date в замовленні
     if 'scheduled_time' in update_data:
-        order = db.query(Orders).filter(Orders.id == schedule.order_id).first()
+        stmt_order = select(Orders).where(Orders.id == schedule.order_id)
+        order = db.execute(stmt_order).scalars().first()
         if order:
             order.execution_date = update_data['scheduled_time']
     
@@ -337,10 +337,11 @@ def get_team_workload(
     """
     # Шукаємо кількість замовлень для бригади на вказану дату
     # Зв'язуємо таблицю Orders та Schedules
-    orders_count = db.query(Schedules).join(Orders).filter(
+    stmt_count = select(func.count()).select_from(Schedules).join(Orders).where(
         Orders.team_id == team_id,
         cast(Schedules.scheduled_time, Date) == target_date
-    ).count()
+    )
+    orders_count = db.execute(stmt_count).scalar()
     
     MAX_ORDERS_PER_DAY = 3
     workload_percentage = min((orders_count / MAX_ORDERS_PER_DAY) * 100, 100)
@@ -364,7 +365,8 @@ def assign_user_to_team(
     Формування бригади. 
     Додає робітника (користувача) до вказаної бригади.
     """
-    user = db.query(Users).filter(Users.id == user_id).first()
+    stmt = select(Users).where(Users.id == user_id)
+    user = db.execute(stmt).scalars().first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Користувача не знайдено")
         

@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 from passlib.hash import bcrypt
+from typing import List
 
 from app.utils.database import get_db
 from app.utils.security import get_current_user
@@ -78,7 +79,7 @@ async def add_plot(plot_data: GardenPlotCreate,
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={'status': 'success', 'message': 'Ділянка успішно додана'})
     
 # Отримання ділянок поточного користувача
-@router.get('/my_plots', response_model=list[GardenPlotRead])
+@router.get('/my_plots', response_model=List[GardenPlotRead])
 async def get_my_plots(db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
     return db.execute(select(GardenPlots).where(GardenPlots.user_id == current_user.id)).scalars().all()
 
@@ -138,7 +139,8 @@ def add_plant_to_plot(
     db: Session = Depends(get_db), 
     current_user: Users = Depends(get_current_user)
     ):
-    plot = db.query(GardenPlots).filter(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id).first()
+    stmt = select(GardenPlots).where(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id)
+    plot = db.execute(stmt).scalars().first()
     if not plot:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ділянку не знайдено")
     
@@ -153,18 +155,22 @@ def add_plant_to_plot(
 
 @router.get("/my_plots/{plot_id}/plants", response_model=list[PlantOut])
 def get_plants_on_plot(plot_id: int, db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
-    plot = db.query(GardenPlots).filter(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id).first()
+    stmt = select(GardenPlots).where(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id)
+    plot = db.execute(stmt).scalars().first()
     if not plot:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ділянку не знайдено")
-    return db.query(Plants).filter(Plants.plot_id == plot_id).all()
+    stmt_plants = select(Plants).where(Plants.plot_id == plot_id)
+    return db.execute(stmt_plants).scalars().all()
 
 @router.delete("/my_plots/{plot_id}/plants/{plant_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_plant_from_plot(plot_id: int, plant_id: int, db: Session = Depends(get_db), current_user: Users = Depends(get_current_user)):
-    plot = db.query(GardenPlots).filter(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id).first()
+    stmt_plot = select(GardenPlots).where(GardenPlots.id == plot_id, GardenPlots.user_id == current_user.id)
+    plot = db.execute(stmt_plot).scalars().first()
     if not plot:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ділянку не знайдено")
         
-    plant = db.query(Plants).filter(Plants.id == plant_id, Plants.plot_id == plot_id).first()
+    stmt_plant = select(Plants).where(Plants.id == plant_id, Plants.plot_id == plot_id)
+    plant = db.execute(stmt_plant).scalars().first()
     if not plant:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Рослину не знайдено")
         
