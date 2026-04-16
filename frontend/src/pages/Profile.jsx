@@ -5,7 +5,9 @@ import Footer from '../components/layout/Footer';
 import { ProfileTab } from '../components/profile/ProfileTab';
 import { PlotsTab } from '../components/profile/PlotsTab';
 import { HistoryTab } from '../components/profile/HistoryTab';
+import { ChangePasswordTab } from '../components/profile/ChangePassword';
 import { useAuth } from '../hooks/useAuth';
+import { Icon } from '../constants/Icons';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -18,16 +20,22 @@ export default function ProfilePage() {
   };
 
   const tabs = [
-    { id: 'profile', label: 'Мій профіль', icon: '👤' },
-    { id: 'plots',   label: 'Мої ділянки', icon: '🌿' },
-    { id: 'history', label: 'Замовлення',   icon: '📋' },
+    { id: 'profile', label: 'Мій профіль', icon: Icon.user },
+    { id: 'plots',   label: 'Мої ділянки', icon: Icon.leaf },
+    { id: 'history', label: 'Замовлення',   icon: Icon.list },
+    { id: 'password', label: 'Змінити пароль',   icon: Icon.edit },
   ];
+
+  // Визначаємо, чи є користувач менеджером (role_id = 2) або бригадиром (role_id = 3)
+  const isManager = user?.role_id === 2;
+  const isTeamLead = user?.role_id === 3;
 
   const renderTab = () => {
     switch (activeTab) {
       case 'profile': return <ProfileTab />;
       case 'plots':   return <PlotsTab />;
       case 'history': return <HistoryTab />;
+      case 'password': return <ChangePasswordTab />;
       default: return null;
     }
   };
@@ -41,12 +49,14 @@ export default function ProfilePage() {
           <aside className="profile-sidebar">
             {/* Аватар + ім'я */}
             <div className="profile-avatar-section">
-              <div className="profile-avatar">🌱</div>
+              <div className="profile-avatar">{Icon.user}</div>
               <div className="profile-user-info">
                 <p className="profile-user-name">
                   {user?.username ?? '...'}
                 </p>
-                <p className="profile-user-role">Клієнт</p>
+                <p className="profile-user-role">
+                  {user?.role_id === 2 ? 'Менеджер' : user?.role_id === 3 ? 'Бригада' : 'Клієнт'}
+                </p>
               </div>
             </div>
 
@@ -64,12 +74,34 @@ export default function ProfilePage() {
               ))}
             </nav>
 
+            {/* Роль-залежні кнопки навігації */}
+            <div className="profile-role-actions">
+              {isManager && (
+                <button
+                  onClick={() => navigate('/manager')}
+                  className="profile-role-btn profile-role-btn--manager"
+                  title="Перейти до панелі менеджера"
+                >
+                  {Icon.edit} Панель менеджера
+                </button>
+              )}
+              {isTeamLead && (
+                <button
+                  onClick={() => navigate('/team')}
+                  className="profile-role-btn profile-role-btn--team"
+                  title="Перейти до сторінки команди"
+                >
+                  {Icon.users} Моя команда
+                </button>
+              )}
+            </div>
+
             {/* Вихід */}
             <button
               onClick={handleLogout}
               className="profile-logout"
             >
-              <span className="profile-logout-icon">🚪</span>
+              <span className="profile-logout-icon">{Icon.logout}</span>
               Вийти з акаунта
             </button>
           </aside>

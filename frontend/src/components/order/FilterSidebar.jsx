@@ -77,7 +77,11 @@ export default function FilterSidebar({
             className="fs-price-input"
             placeholder="Від"
             value={priceRange.min}
-            onChange={e => onPriceChange('min', e.target.value)}
+            min="0"
+            onChange={e => {
+              const value = Math.max(0, Number(e.target.value));
+              onPriceChange('min', isNaN(value) ? '' : value.toString());
+            }}
           />
           <span className="fs-price-dash">—</span>
           <input
@@ -85,7 +89,11 @@ export default function FilterSidebar({
             className="fs-price-input"
             placeholder="До"
             value={priceRange.max}
-            onChange={e => onPriceChange('max', e.target.value)}
+            min="0"
+            onChange={e => {
+              const value = Math.max(0, Number(e.target.value));
+              onPriceChange('max', isNaN(value) ? '' : value.toString());
+            }}
           />
         </div>
       </div>

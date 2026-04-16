@@ -215,8 +215,8 @@ export const teamsAPI = {
       body: JSON.stringify(teamData)
     }),
 
-  deleteTeam: (teamId) =>
-    apiFetch(`/teams/${teamId}`, {
+  removeTeam: (teamId) => 
+    apiFetch(`/teams/remove_team/${teamId}`, {
       method: 'DELETE'
     }),
 

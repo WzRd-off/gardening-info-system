@@ -181,6 +181,8 @@ async def delete_service(
 
 @router.get("/orders", response_model=List[OrderResponse])
 def get_all_orders(
+    status_id: int = None,
+    team_id: int = None,
     db: Session = Depends(get_db),
     current_manager: Users = Depends(get_current_manager)
     ):
@@ -188,6 +190,14 @@ def get_all_orders(
     Перегляд усіх замовлень у системі.
     Використовується менеджером для контролю ефективності та відстеження нових заявок.
     """
+
+    filters = []
+
+    if status_id is not None:
+        filters.append(Orders.status_id == status_id)
+    if team_id is not None:
+        filters.append(Orders.team_id == team_id)
+
     orders = db.execute(
         select(Orders)
         .options(
@@ -197,7 +207,9 @@ def get_all_orders(
             joinedload(Orders.service),
             joinedload(Orders.schedules)
         )
-    ).unique().scalars().all()
+        .where(*filters)
+    ).unique().scalars().all()        
+
     # Додати schedule_id і scheduled_date для кожного замовлення
     for order in orders:
         if order.schedules:

@@ -51,7 +51,10 @@ export function ProfileTab() {
           <input
             className="input"
             value={form.phone}
-            onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+            onChange={e => {
+              const value = e.target.value.replace(/[^\d+]/g, '');
+              setForm(p => ({ ...p, phone: value }));
+            }}
             placeholder="+38 (0__) ___-__-__"
             type="tel"
           />

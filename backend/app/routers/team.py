@@ -5,7 +5,7 @@ from sqlalchemy import select, func
 from typing import List
 
 from app.utils.database import get_db
-from app.utils.security import get_current_team
+from app.utils.security import get_current_team, get_current_manager
 
 from app.models.users import Users
 from app.models.orders import Orders
@@ -45,10 +45,12 @@ def create_team(team_data: TeamCreate, db: Session = Depends(get_db)):
     db.refresh(leader)
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={'status': 'success', 'message': 'Команда створена'})
 
+# Отримати список усіх команд
 @router.get("/", response_model=list[TeamRead])
 def get_all_teams(db: Session = Depends(get_db)):
     return db.execute(select(Teams)).scalars().all()
 
+# Отримати замовлення команди
 @router.get("/orders", response_model=List[OrderResponse])
 def get_team_orders(db: Session = Depends(get_db), current_user: Users = Depends(get_current_team)):
     if not current_user.team_id:
@@ -64,6 +66,7 @@ def get_team_orders(db: Session = Depends(get_db), current_user: Users = Depends
         )
     ).unique().scalars().all()
 
+# Оновити статус замовлення
 @router.patch("/orders/{order_id}/status", response_model=OrderOut)
 def update_order_status(
     order_id: int, 
@@ -99,6 +102,7 @@ def update_order_status(
     db.refresh(order)
     return order
 
+# Отримати історію виплат
 @router.get("/finance")
 def get_team_finance(db: Session = Depends(get_db), current_user: Users = Depends(get_current_team)):
     if not current_user.team_id:
@@ -129,3 +133,23 @@ def get_team_finance(db: Session = Depends(get_db), current_user: Users = Depend
             } for p in history
         ]
     }
+
+# Видалити команду
+@router.delete("/remove_team/{team_id}")
+def delete_team_by_id(
+    team_id: int,
+    db: Session = Depends(get_db),
+    current_manager: Session = Depends(get_current_manager)
+    ):
+    stmt = select(Teams).where(Teams.id == team_id)
+    team = db.execute(stmt).scalars().first()
+
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Команду не знайдено.")
+    
+    db.delete(team)
+    db.commit()
+
+    return JSONResponse(status_code=status.HTTP_200_OK, content={
+        'status': 'success', 'message': 'Команду успішно видалено'
+    })

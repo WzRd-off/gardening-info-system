@@ -105,7 +105,10 @@ export default function AuthPage() {
                   className="auth-input"
                   placeholder="Телефон"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d+]/g, '');
+                    setPhone(value);
+                  }}
                 />
               </div>
             )}

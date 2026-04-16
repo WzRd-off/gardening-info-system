@@ -46,6 +46,21 @@ export default function TeamsTab() {
   const effColor = efficiency => efficiency >= 75 ? '#007D00' : efficiency >= 40 ? '#FF9800' : '#D32F2F';
   const effLabel = efficiency => efficiency >= 75 ? 'Висока' : efficiency >= 40 ? 'Середня' : 'Низька';
 
+  const handleDelete = async (teamId) => {
+    if (!window.confirm('Видалити бригаду? Це не видалить призначені замовлення.')) return;
+    
+    setSaving(true);
+    setError('');
+    try {
+      await teamsAPI.removeTeam(teamId);
+      await fetchAll();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleCreate = async () => {
     if (!newTeam.name.trim()) {
       setError('Назва бригади обов\'язкова');
@@ -90,6 +105,14 @@ export default function TeamsTab() {
                     <h3>{team.name}</h3>
                     {team.leader && <p className="mgr-team-card__leader">{Icon.user} {team.leader}</p>}
                   </div>
+                  <button 
+                    type="button" 
+                    className="mgr-button mgr-button--danger mgr-button--small" 
+                    onClick={() => handleDelete(team.id)}
+                    title="Видалити бригаду"
+                  >
+                    {Icon.trash}
+                  </button>
                 </div>
 
                 {stats === null ? (

@@ -67,7 +67,10 @@ export function PlotsTab() {
                 type="number"
                 min="0"
                 value={newPlot.area}
-                onChange={e => setNewPlot(p => ({ ...p, area: e.target.value }))}
+                onChange={e => {
+                  const value = Math.max(0, Number(e.target.value));
+                  setNewPlot(p => ({ ...p, area: isNaN(value) ? '' : value }));
+                }}
               />
             </Field>
           </div>

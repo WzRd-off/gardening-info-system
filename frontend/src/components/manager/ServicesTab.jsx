@@ -5,6 +5,33 @@ import { Spinner, EmptyState, Modal, Field } from './shared';
 import { managerAPI } from '../../services/api';
 import { API_BASE_URL } from '../../services/config';
 
+// Функція для валідації ціни: тільки цифри та максимум одна кома не на першому місці
+const validatePrice = (input) => {
+  if (!input) return '';
+  
+  // Видаляємо всі символи крім цифр та коми
+  const filtered = input.replace(/[^\d,]/g, '');
+  
+  // Знаходимо позицію першої коми
+  const commaIndex = filtered.indexOf(',');
+  
+  // Якщо коми немає, просто повертаємо цифри
+  if (commaIndex === -1) {
+    return filtered;
+  }
+  
+  // Якщо кома на першому місці, видаляємо її
+  if (commaIndex === 0) {
+    return filtered.substring(1).replace(/,/g, '');
+  }
+  
+  // Якщо кома не на першому місці, зберігаємо тільки першу кому
+  const beforeComma = filtered.substring(0, commaIndex);
+  const afterComma = filtered.substring(commaIndex + 1).replace(/,/g, '');
+  
+  return beforeComma + ',' + afterComma;
+};
+
 export default function ServicesTab() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -170,7 +197,7 @@ export default function ServicesTab() {
               <textarea className="mgr-input mgr-input--textarea" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Короткий опис послуги..." />
             </Field>
             <Field label="Ціна (₴) *" hint="Тільки цифри та кома">
-              <input className="mgr-input" value={form.price} onKeyDown={e => { if (!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', ','].includes(e.key) && (e.key < '0' || e.key > '9')) e.preventDefault(); }} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} placeholder="1200" />
+              <input className="mgr-input" value={form.price} onChange={e => setForm(p => ({ ...p, price: validatePrice(e.target.value) }))} placeholder="1200" />
             </Field>
             <Field label="Зображення" hint={modal === 'edit' ? 'Залиште порожнім, щоб не змінювати фото' : ''}>
               <div className="mgr-file-row">

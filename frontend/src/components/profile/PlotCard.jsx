@@ -50,7 +50,7 @@ export function PlotCard({ plot, onRefresh }) {
           </p>
         </div>
         <Link
-          to={`/order?plot_id=${plot.id}`}
+          to={`/services`}
           className="btn-sm"
           style={{ height: 38, padding: '0 16px', fontSize: 13, flexShrink: 0 }}
         >
