@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Icons } from '../../constants/Icons';
+import { Icons } from '../../constants/icons';
 import { Spinner } from './Spinner';
 import { teamsAPI } from '../../services/api';
 
@@ -32,8 +32,8 @@ export function FinanceTab() {
   if (!data) return null;
 
   const totalEarned = data.total_earned ?? data.earned ?? 0;
-  const completedCount = data.completed_orders ?? data.count ?? 0;
-  const transactions = data.payments ?? data.transactions ?? [];
+  const completedCount = data.completed_orders_count ?? data.completed_orders ?? data.count ?? 0;
+  const transactions = data.payments ?? data.transactions ?? data.history ?? [];
   const progress = Math.min(Math.round((completedCount / MONTHLY_TARGET) * 100), 100);
 
   const paymentStatus = (p) => {
@@ -100,7 +100,7 @@ export function FinanceTab() {
           <div>
             {transactions.map((tx, i) => {
               const ps = paymentStatus(tx);
-              const date = tx.created_at ?? tx.date;
+              const date = tx.created_at ?? tx.date ?? tx.payment_date;
               return (
                 <div key={tx.id ?? i} className="team-transaction-item">
                   <div>
@@ -114,9 +114,6 @@ export function FinanceTab() {
                     )}
                   </div>
                   <div className="team-transaction-right">
-                    <span className="team-transaction-status" style={{ background: ps.bg, color: ps.color }}>
-                      {ps.label}
-                    </span>
                     <span className="team-transaction-amount">
                       +{Number(tx.amount ?? tx.sum ?? 0).toLocaleString('uk-UA')} ₴
                     </span>

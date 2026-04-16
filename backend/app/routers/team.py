@@ -117,12 +117,15 @@ def get_team_finance(db: Session = Depends(get_db), current_user: Users = Depend
         "team_id": current_user.team_id,
         "total_earned": float(total_amount),
         "completed_orders_count": completed_orders_count,
-        "history": [
+        "payments": [
             {
                 "payment_id": p.id,
+                "id": p.id,
                 "order_id": p.order_id,
                 "amount": float(p.amount),
-                "date": p.payment_date
+                "date": p.payment_date,
+                "payment_date": p.payment_date,
+                "status": "оплачено"
             } for p in history
         ]
     }
