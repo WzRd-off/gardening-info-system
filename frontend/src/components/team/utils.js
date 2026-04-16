@@ -1,4 +1,4 @@
-import { TEAM_STATUSES } from './constants';
+import { TEAM_STATUSES } from '../../constants/appConstants';
 import { getAuthHeaders, getJsonHeaders } from '../../services/api';
 
 export const authHeaders = getAuthHeaders;

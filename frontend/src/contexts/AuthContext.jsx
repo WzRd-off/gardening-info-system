@@ -1,5 +1,10 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { API_BASE_URL } from '../services/config';
+
+/**
+ * Базова URL-адреса API. 
+ * Визначена локально, щоб уникнути помилок імпорту в поточному середовищі.
+ */
+const API_BASE_URL = 'http://localhost:8000';
 
 export const AuthContext = createContext();
 
@@ -9,7 +14,7 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('jwt'));
 
-  // Загрузка профиля при наличии токена
+  // Завантаження профілю за наявності токена
   useEffect(() => {
     if (!token) {
       setIsLoading(false);
@@ -27,23 +32,23 @@ export function AuthProvider({ children }) {
         });
 
         if (response.status === 401) {
-          // Токен истёк
+          // Термін дії токена закінчився
           localStorage.removeItem('jwt');
           setToken(null);
           setUser(null);
-          setError('Сессия истекла. Пожалуйста, войдите снова');
+          setError('Сесія завершилася. Будь ласка, увійдіть знову');
           return;
         }
 
         if (!response.ok) {
-          throw new Error('Ошибка при загрузке профиля');
+          throw new Error('Помилка під час завантаження профілю');
         }
 
         const userData = await response.json();
         setUser(userData);
         setError(null);
       } catch (err) {
-        console.error('Ошибка при загрузке профиля:', err);
+        console.error('Помилка під час завантаження профілю:', err);
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -53,7 +58,7 @@ export function AuthProvider({ children }) {
     fetchProfile();
   }, [token]);
 
-  // Вход
+  // Вхід
   const login = useCallback(async (email, password) => {
     try {
       setIsLoading(true);
@@ -67,7 +72,7 @@ export function AuthProvider({ children }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Ошибка входа');
+        throw new Error(errorData.detail || 'Помилка входу');
       }
 
       const data = await response.json();
@@ -85,7 +90,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // Регистрация
+  // Реєстрація
   const register = useCallback(async (username, email, password, phone = '') => {
     try {
       setIsLoading(true);
@@ -99,10 +104,10 @@ export function AuthProvider({ children }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Ошибка регистрации');
+        throw new Error(errorData.detail || 'Помилка реєстрації');
       }
 
-      // После регистрации нужно войти
+      // Після реєстрації потрібно виконати вхід
       const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,7 +116,7 @@ export function AuthProvider({ children }) {
 
       if (!loginResponse.ok) {
         const errorData = await loginResponse.json();
-        throw new Error(errorData.detail || 'Ошибка входа после регистрации');
+        throw new Error(errorData.detail || 'Помилка входу після реєстрації');
       }
 
       const loginData = await loginResponse.json();
@@ -129,7 +134,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // Выход
+  // Вихід
   const logout = useCallback(() => {
     localStorage.removeItem('jwt');
     setToken(null);

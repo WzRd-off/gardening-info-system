@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-import { statusMeta, MONTH_UA, WEEKDAYS, STATUS_LIST } from './constants';
-import { Icon } from './icons';
+import { statusMeta, MONTH_UA, WEEKDAYS, STATUS_LIST } from '../../constants/appConstants';
+import { Icon } from '../../constants/Icons';
 import { managerAPI, teamsAPI } from '../../services/api';
 
 // YYYY-MM-DD для date object

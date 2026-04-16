@@ -1,61 +1,61 @@
 import { profileAPI } from './api';
 
 /**
- * Получить профиль текущего пользователя
+ * Отримати профіль поточного користувача
  */
 export const getMyProfile = () => profileAPI.getMyProfile();
 
 /**
- * Обновить профиль
+ * Оновити профіль
  */
 export const updateProfile = (data) => profileAPI.updateProfile(data);
 
 /**
- * Изменить пароль
+ * Змінити пароль
  */
 export const changePassword = (oldPassword, newPassword) =>
   profileAPI.changePassword(oldPassword, newPassword);
 
 /**
- * Добавить ділянку
+ * Додати ділянку
  */
 export const addPlot = (address, area, features = '') =>
   profileAPI.addPlot({ address, area, features });
 
 /**
- * Получить все ділянки пользователя
+ * Отримати всі ділянки користувача
  */
 export const getMyPlots = () => profileAPI.getMyPlots();
 
 /**
- * Отредактировать ділянку
+ * Редагувати ділянку
  */
 export const editPlot = (plotId, address, area, features = '') =>
   profileAPI.editPlot(plotId, { address, area, features });
 
 /**
- * Удалить ділянку
+ * Видалити ділянку
  */
 export const deletePlot = (plotId) => profileAPI.deletePlot(plotId);
 
 /**
- * Получить историю обслуживания ділянок
+ * Отримати історію обслуговування ділянок
  */
 export const getPlotsHistory = () => profileAPI.getPlotsHistory();
 
 /**
- * Добавить растение на ділянку
+ * Додати рослину на ділянку
  */
 export const addPlantToPlot = (plotId, name) =>
   profileAPI.addPlantToPlot(plotId, { name });
 
 /**
- * Получить растения на ділянке
+ * Отримати рослини на ділянці
  */
 export const getPlantsOnPlot = (plotId) => profileAPI.getPlantsOnPlot(plotId);
 
 /**
- * Удалить растение с ділянки
+ * Видалити рослину з ділянки
  */
 export const deletePlantFromPlot = (plotId, plantId) =>
   profileAPI.deletePlantFromPlot(plotId, plantId);

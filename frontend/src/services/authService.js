@@ -1,12 +1,12 @@
 import { authAPI } from './api';
 
 /**
- * Получить текущий токен
+ * Отримати поточний токен
  */
 export const getToken = () => localStorage.getItem('jwt');
 
 /**
- * Установить токен
+ * Встановити токен
  */
 export const setToken = (token) => {
   if (token) {
@@ -17,12 +17,12 @@ export const setToken = (token) => {
 };
 
 /**
- * Проверить, есть ли действительный токен
+ * Перевірити, чи є дійсний токен
  */
 export const isAuthenticated = () => !!getToken();
 
 /**
- * Вход пользователя
+ * Вхід користувача
  */
 export const login = async (email, password) => {
   try {
@@ -31,14 +31,14 @@ export const login = async (email, password) => {
       setToken(response.access_token);
       return { success: true, token: response.access_token };
     }
-    return { success: false, error: 'Токен не получен' };
+    return { success: false, error: 'Токен не отримано' };
   } catch (error) {
     return { success: false, error: error.message };
   }
 };
 
 /**
- * Регистрация пользователя
+ * Реєстрація користувача
  */
 export const register = async (username, email, password, phone = '') => {
   try {
@@ -47,14 +47,14 @@ export const register = async (username, email, password, phone = '') => {
       setToken(response.access_token);
       return { success: true, token: response.access_token };
     }
-    return { success: false, error: 'Токен не получен' };
+    return { success: false, error: 'Токен не отримано' };
   } catch (error) {
     return { success: false, error: error.message };
   }
 };
 
 /**
- * Выход пользователя
+ * Вихід користувача
  */
 export const logout = () => {
   setToken(null);

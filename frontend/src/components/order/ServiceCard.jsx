@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Icons } from '../order/Icons';
+import { Icons } from '../../constants/Icons';
 import { API_BASE_URL } from '../../services/config';
 /**
  * Картка однієї послуги в каталозі.

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Icon } from './icons';
-import { CATEGORIES } from './constants';
+import { Icon } from '../../constants/Icons';
+import { CATEGORIES } from '../../constants/appConstants';
 import { Spinner, EmptyState, Modal, Field } from './shared';
 import { managerAPI } from '../../services/api';
 import { API_BASE_URL } from '../../services/config';

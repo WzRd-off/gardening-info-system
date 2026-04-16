@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Icon } from '../components/manager/icons';
+import { Icon } from '../constants/Icons';
 import ServicesTab from '../components/manager/ServicesTab';
 import OrdersTab from '../components/manager/OrdersTab';
 import TeamsTab from '../components/manager/TeamsTab';

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { Icons } from '../components/order/Icons';
+import { Icons } from '../constants/Icons';
 import FilterSidebar from '../components/order/FilterSidebar';
 import ServiceCard from '../components/order/ServiceCard';
 import OrderModal from '../components/order/OrderModal';

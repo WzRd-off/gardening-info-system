@@ -6,11 +6,11 @@ export const getTeamInfo = () => teamsAPI.getTeamInfo();
 
 export const getAllTeams = () => teamsAPI.getAll();
 
-// ============= ORDERS (для команды) =============
+// ============= ORDERS (для команди) =============
 
 export const getTeamOrders = (filters = {}) => ordersAPI.getAllOrders();
 
-// ============= PAYMENTS (для команды) =============
+// ============= PAYMENTS (для команди) =============
 
 export const getTeamPayments = () => paymentsAPI.getTeamPayments();
 

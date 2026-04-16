@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Icons } from './Icons.jsx';
+import { Icons } from '../../constants/Icons';
 import { Spinner } from './Spinner';
 import { EmptyState } from './EmptyState';
 import { TaskCard } from './TaskCard';
-import { TEAM_STATUSES } from './constants';
+import { TEAM_STATUSES } from '../../constants/appConstants';
 import { resolveStatus } from './utils';
 import { ordersAPI, teamsAPI } from '../../services/api';
 

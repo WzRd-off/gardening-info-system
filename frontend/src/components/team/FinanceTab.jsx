@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Icons } from './Icons.jsx';
+import { Icons } from '../../constants/Icons';
 import { Spinner } from './Spinner';
 import { teamsAPI } from '../../services/api';
 

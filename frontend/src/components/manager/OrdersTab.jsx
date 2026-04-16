@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { STATUS_LIST } from './constants';
+import { STATUS_LIST } from '../../constants/appConstants';
 import { Spinner, EmptyState, Modal, Field, StatusBadge } from './shared';
-import { Icon } from './icons';
+import { Icon } from '../../constants/Icons';
 import { managerAPI, teamsAPI } from '../../services/api';
 
 export default function OrdersTab() {

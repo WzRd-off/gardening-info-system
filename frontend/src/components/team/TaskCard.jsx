@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Icons } from './Icons.jsx';
+import { Icons } from '../../constants/Icons';
 import { StatusBadge } from './StatusBadge';
-import { TEAM_STATUSES, STATUS_STRIPE } from './constants';
+import { TEAM_STATUSES, STATUS_STRIPE } from '../../constants/appConstants';
 import { resolveStatus } from './utils';
 
 export function TaskCard({ order, onStatusChange, updating }) {

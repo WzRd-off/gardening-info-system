@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { statusMeta } from './constants';
-import { Icon } from './icons';
+import { statusMeta } from '../../constants/appConstants';
+import { Icon } from '../../constants/Icons';
 
 export function Spinner() {
   return (

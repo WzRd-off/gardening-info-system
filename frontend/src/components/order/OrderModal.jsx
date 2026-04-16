@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Icons } from '../order/Icons';
+import { Icons } from '../../constants/Icons';
 import { useAuth } from '../../hooks/useAuth';
 import { profileAPI, managerAPI, ordersAPI } from '../../services/api';
 

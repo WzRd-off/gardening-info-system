@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { Icons } from '../components/team/Icons.jsx';
+import { Icons } from '../constants/Icons';
 import { TasksTab } from '../components/team/TasksTab';
 import { FinanceTab } from '../components/team/FinanceTab';
 import { useAuth } from '../hooks/useAuth';

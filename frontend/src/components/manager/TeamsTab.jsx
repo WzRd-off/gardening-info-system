@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { statusMeta } from './constants';
+import { statusMeta } from '../../constants/appConstants';
 import { Spinner, EmptyState, Modal, Field } from './shared';
-import { Icon } from './icons';
+import { Icon } from '../../constants/Icons';
 import { managerAPI, teamsAPI } from '../../services/api';
 
 export default function TeamsTab() {
