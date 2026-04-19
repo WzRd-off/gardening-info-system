@@ -145,7 +145,7 @@ export default function MainPage() {
           
           <div className="portfolio-grid">
             <div className="portfolio-item portfolio-item--featured">
-              <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80" alt="Озеленення двору" />
+              <img src="/portfolio1.jpg" alt="Озеленення двору" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Ландшафт</span>
@@ -156,7 +156,7 @@ export default function MainPage() {
             </div>
             
             <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1558904541-efa843a96f09?auto=format&fit=crop&w=1200&q=80" alt="Система поливу" />
+              <img src="/portfolio2.jpeg" alt="Система поливу" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Полив</span>
@@ -167,7 +167,7 @@ export default function MainPage() {
             </div>
 
             <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1598902108854-10e335adac99?auto=format&fit=crop&w=1200&q=80" alt="Реконструкція саду" />
+              <img src="/portfolio3.jpg" alt="Реконструкція саду" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Садівництво</span>
@@ -178,7 +178,7 @@ export default function MainPage() {
             </div>
 
             <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1585320817134-ab7cea356313?auto=format&fit=crop&w=1200&q=80" alt="Квітник з розами" />
+              <img src="/portfolio4.jpg" alt="Квітник з розами" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Дизайн</span>
@@ -189,7 +189,7 @@ export default function MainPage() {
             </div>
 
             <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=80" alt="Садова доріжка" />
+              <img src="/portfolio5.jpg" alt="Садова доріжка" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Ландшафт</span>
@@ -200,29 +200,29 @@ export default function MainPage() {
             </div>
 
             <div className="portfolio-item portfolio-item--featured">
-              <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80" alt="Зелений газон" />
+              <img src="/portfolio6.jpg" alt="Зелений газон" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Газон</span>
                   <h3 className="h3 portfolio-item-title">Укладка рулонного газону</h3>
-                  <p className="text-body portfolio-item-desc">Донецька область, 2024</p>
+                  <p className="text-body portfolio-item-desc">Одеська область, 2024</p>
                 </div>
               </div>
             </div>
 
             <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1589967622444-8b8409e7e17d?auto=format&fit=crop&w=1200&q=80" alt="Фонтан у саду" />
+              <img src="/portfolio7.jpg" alt="Фонтан у саду" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Водойми</span>
                   <h3 className="h3 portfolio-item-title">Декоративний фонтан на ділянці</h3>
-                  <p className="text-body portfolio-item-desc">Zaporizhzhia region, 2023</p>
+                  <p className="text-body portfolio-item-desc">Запорізька область, 2023</p>
                 </div>
               </div>
             </div>
 
             <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1564334614601-1e9c92e0ce8b?auto=format&fit=crop&w=1200&q=80" alt="Комбіновані квітники" />
+              <img src="/portfolio8.jpg" alt="Комбіновані квітники" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Дизайн</span>
@@ -233,45 +233,12 @@ export default function MainPage() {
             </div>
 
             <div className="portfolio-item portfolio-item--featured">
-              <img src="https://images.unsplash.com/photo-1584341127014-9420d3acbd45?auto=format&fit=crop&w=1200&q=80" alt="Тіністі дерева" />
+              <img src="/portfolio9.jpg" alt="Тіністі дерева" />
               <div className="portfolio-overlay">
                 <div className="portfolio-glass-card">
                   <span className="portfolio-tag">Садівництво</span>
                   <h3 className="h3 portfolio-item-title">Висадка декоративних дерев</h3>
                   <p className="text-body portfolio-item-desc">Полтавська область, 2024</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1586930252167-5aca5e42cddc?auto=format&fit=crop&w=1200&q=80" alt="Озеленення терас" />
-              <div className="portfolio-overlay">
-                <div className="portfolio-glass-card">
-                  <span className="portfolio-tag">Дизайн</span>
-                  <h3 className="h3 portfolio-item-title">Озеленення та благоустрій терас</h3>
-                  <p className="text-body portfolio-item-desc">Чернівецька область, 2024</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1200&q=80" alt="Садові скульптури" />
-              <div className="portfolio-overlay">
-                <div className="portfolio-glass-card">
-                  <span className="portfolio-tag">Мистецтво</span>
-                  <h3 className="h3 portfolio-item-title">Прикраса саду скульптурами</h3>
-                  <p className="text-body portfolio-item-desc">Сумська область, 2023</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="portfolio-item">
-              <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1200&q=80" alt="Садові скульптури" />
-              <div className="portfolio-overlay">
-                <div className="portfolio-glass-card">
-                  <span className="portfolio-tag">Мистецтво</span>
-                  <h3 className="h3 portfolio-item-title">Прикраса саду скульптурами</h3>
-                  <p className="text-body portfolio-item-desc">Сумська область, 2023</p>
                 </div>
               </div>
             </div>
@@ -364,7 +331,7 @@ export default function MainPage() {
                 </div>
                 <div className="widget-info">
                   <h4>Наш офіс</h4>
-                  <p>м. Одеса, вул. Садова, 15</p>
+                  <p>м. Київ, вул. Садова, 15</p>
                 </div>
               </div>
             </div>
