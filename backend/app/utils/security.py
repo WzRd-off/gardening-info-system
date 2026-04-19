@@ -1,5 +1,4 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from jose import jwt, JWTError
@@ -10,9 +9,22 @@ from app.utils.generator_jwt import SECRET_KEY, ALGORITHM
 from app.models.users import Users
 from app.models.roles import Roles
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+def get_token_from_cookie(access_token: str = Cookie(None)):
+    """
+    Отримати JWT токен з HttpOnly cookie
+    """
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Не вдалося перевірити облікові дані",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return access_token
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(
+    token: str = Depends(get_token_from_cookie), 
+    db: Session = Depends(get_db)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Не вдалося перевірити облікові дані",

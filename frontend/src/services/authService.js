@@ -1,37 +1,23 @@
 import { authAPI } from './api';
 
 /**
- * Отримати поточний токен
+ * Перевірити, чи є користувач автентифікований
+ * Цей метод тепер мав би викликатися через AuthContext
  */
-export const getToken = () => localStorage.getItem('jwt');
-
-/**
- * Встановити токен
- */
-export const setToken = (token) => {
-  if (token) {
-    localStorage.setItem('jwt', token);
-  } else {
-    localStorage.removeItem('jwt');
-  }
+export const isAuthenticated = () => {
+  // Рекомендується використовувати AuthContext для перевірки
+  console.warn('isAuthenticated() is deprecated. Use AuthContext instead.');
+  return false;
 };
 
 /**
- * Перевірити, чи є дійсний токен
- */
-export const isAuthenticated = () => !!getToken();
-
-/**
  * Вхід користувача
+ * Рекомендується використовувати AuthContext.login замість цієї функції
  */
 export const login = async (email, password) => {
   try {
     const response = await authAPI.login(email, password);
-    if (response.access_token) {
-      setToken(response.access_token);
-      return { success: true, token: response.access_token };
-    }
-    return { success: false, error: 'Токен не отримано' };
+    return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
   }
@@ -39,15 +25,12 @@ export const login = async (email, password) => {
 
 /**
  * Реєстрація користувача
+ * Рекомендується використовувати AuthContext.register замість цієї функції
  */
 export const register = async (username, email, password, phone = '') => {
   try {
     const response = await authAPI.register(username, email, password, phone);
-    if (response.access_token) {
-      setToken(response.access_token);
-      return { success: true, token: response.access_token };
-    }
-    return { success: false, error: 'Токен не отримано' };
+    return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
   }
@@ -55,7 +38,12 @@ export const register = async (username, email, password, phone = '') => {
 
 /**
  * Вихід користувача
+ * Рекомендується використовувати AuthContext.logout замість цієї функції
  */
-export const logout = () => {
-  setToken(null);
+export const logout = async () => {
+  try {
+    await authAPI.logout();
+  } catch (error) {
+    console.error('Error logging out:', error);
+  }
 };

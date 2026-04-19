@@ -42,10 +42,25 @@ async def reg_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     
-    # ИСПРАВЛЕНО: stasus -> status
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={
-        'status': 'success', 'message': 'Користувача успішно зареєстровано'
-    })
+    # Створити JWT токен
+    access_token = create_access_token(data={"sub": str(new_user.id), "role": new_user.role_id})
+    
+    response = JSONResponse(
+        status_code=status.HTTP_201_CREATED, 
+        content={'status': 'success', 'message': 'Користувача успішно зареєстровано'}
+    )
+    
+    # Встановити HttpOnly cookie
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,  # Встановити True для production (HTTPS)
+        samesite="lax",
+        max_age=1440 * 60  # 1 день в секундах
+    )
+    
+    return response
 
 # Авторизація користувача
 @router.post('/login')
@@ -59,8 +74,37 @@ async def auth_user(auth_data: UserLogin, db: Session = Depends(get_db)):
 
     access_token = create_access_token(data={"sub": str(user.id), "role": user.role_id})
 
-    return JSONResponse(status_code=status.HTTP_200_OK, content={
-        "status": "success", 
-        "access_token": access_token,
-        "message": "Ви успішно увійшли"
-    })
+    response = JSONResponse(
+        status_code=status.HTTP_200_OK, 
+        content={"status": "success", "message": "Ви успішно увійшли"}
+    )
+    
+    # Встановити HttpOnly cookie
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,  # Встановити True для production (HTTPS)
+        samesite="lax",
+        max_age=1440 * 60  # 1 день в секундах
+    )
+    
+    return response
+
+# Вихід користувача
+@router.post('/logout')
+async def logout():
+    response = JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"status": "success", "message": "Ви успішно вийшли"}
+    )
+    
+    # Видалити HttpOnly cookie
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        secure=False,
+        samesite="lax"
+    )
+    
+    return response

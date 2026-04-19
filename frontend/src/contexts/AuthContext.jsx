@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { authAPI, profileAPI } from '../services/api';
 
 /**
  * Базова URL-адреса API. 
@@ -12,51 +13,26 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('jwt'));
 
-  // Завантаження профілю за наявності токена
+  // Перевірка аутентифікації при завантаженні
   useEffect(() => {
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchProfile = async () => {
+    const checkAuth = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${API_BASE_URL}/profile/my_profile`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.status === 401) {
-          // Термін дії токена закінчився
-          localStorage.removeItem('jwt');
-          setToken(null);
-          setUser(null);
-          setError('Сесія завершилася. Будь ласка, увійдіть знову');
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error('Помилка під час завантаження профілю');
-        }
-
-        const userData = await response.json();
+        const userData = await profileAPI.getMyProfile();
         setUser(userData);
         setError(null);
       } catch (err) {
-        console.error('Помилка під час завантаження профілю:', err);
-        setError(err.message);
+        // 401 або інші помилки - користувач не автентифікований
+        setUser(null);
+        setError(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchProfile();
-  }, [token]);
+    checkAuth();
+  }, []);
 
   // Вхід
   const login = useCallback(async (email, password) => {
@@ -64,22 +40,11 @@ export function AuthProvider({ children }) {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+      await authAPI.login(email, password);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Помилка входу');
-      }
-
-      const data = await response.json();
-      const newToken = data.access_token;
-
-      localStorage.setItem('jwt', newToken);
-      setToken(newToken);
+      // Після успішної входу, завантажимо профіль
+      const userData = await profileAPI.getMyProfile();
+      setUser(userData);
 
       return { success: true };
     } catch (err) {
@@ -96,34 +61,14 @@ export function AuthProvider({ children }) {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch(`${API_BASE_URL}/auth/reg`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password, phone })
-      });
+      await authAPI.register(username, email, password, phone);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Помилка реєстрації');
-      }
+      // Після успішної реєстрації, виконуємо вхід
+      await authAPI.login(email, password);
 
-      // Після реєстрації потрібно виконати вхід
-      const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!loginResponse.ok) {
-        const errorData = await loginResponse.json();
-        throw new Error(errorData.detail || 'Помилка входу після реєстрації');
-      }
-
-      const loginData = await loginResponse.json();
-      const newToken = loginData.access_token;
-
-      localStorage.setItem('jwt', newToken);
-      setToken(newToken);
+      // Завантажимо профіль
+      const userData = await profileAPI.getMyProfile();
+      setUser(userData);
 
       return { success: true };
     } catch (err) {
@@ -135,22 +80,27 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Вихід
-  const logout = useCallback(() => {
-    localStorage.removeItem('jwt');
-    setToken(null);
-    setUser(null);
-    setError(null);
+  const logout = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      await authAPI.logout();
+    } catch (err) {
+      console.error('Помилка під час виходу:', err);
+    } finally {
+      setUser(null);
+      setError(null);
+      setIsLoading(false);
+    }
   }, []);
 
   const value = {
     user,
-    token,
     isLoading,
     error,
     login,
     register,
     logout,
-    isAuthenticated: !!token,
+    isAuthenticated: !!user,
     userRole: user?.role_id
   };
 

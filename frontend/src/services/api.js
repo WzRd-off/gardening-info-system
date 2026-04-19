@@ -1,18 +1,10 @@
 import { API_BASE_URL } from './config';
 
 /**
- * Получить заголовки авторизации
- */
-export const getAuthHeaders = () => ({
-  'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
-});
-
-/**
- * Получить заголовки для JSON запроса с авторизацией
+ * Получить заголовки для JSON запроса
  */
 export const getJsonHeaders = () => ({
   'Content-Type': 'application/json',
-  'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
 });
 
 /**
@@ -25,12 +17,12 @@ export const apiFetch = async (endpoint, options = {}) => {
   try {
     const response = await fetch(url, {
       ...options,
-      headers
+      headers,
+      credentials: 'include'
     });
 
     // Проверка 401 - перенаправить на вход
     if (response.status === 401) {
-      localStorage.removeItem('jwt');
       window.location.href = '/auth';
       throw new Error('Сессия истекла');
     }
@@ -76,6 +68,11 @@ export const authAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, email, password, phone })
+    }),
+
+  logout: () =>
+    apiFetch('/auth/logout', {
+      method: 'POST'
     }),
 };
 
@@ -179,14 +176,12 @@ export const managerAPI = {
   createService: (formData) =>
     apiFetch('/manager/services', {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: formData
     }),
 
   updateService: (serviceId, formData) =>
     apiFetch(`/manager/services/${serviceId}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: formData
     }),
 

@@ -1,9 +1,3 @@
-import { getAuthHeaders, getJsonHeaders } from '../services/api';
-
-// ============= AUTH & HEADERS =============
-export const authHeaders = getAuthHeaders;
-export const jsonHeaders = getJsonHeaders;
-
 // ============= ORDER STATUSES =============
 export const STATUS_LIST = [
   { id: 1, name: 'Отримано',              color: '#2196F3', bg: '#E3F2FD' },
