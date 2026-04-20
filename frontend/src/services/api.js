@@ -12,20 +12,17 @@ export const getJsonHeaders = () => ({
  */
 export const apiFetch = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const headers = options.headers || getJsonHeaders();
+  
+  // Если body это FormData, не устанавливаем Content-Type (браузер установит multipart/form-data)
+  const isFormData = options.body instanceof FormData;
+  const headers = isFormData ? undefined : (options.headers || getJsonHeaders());
 
   try {
     const response = await fetch(url, {
       ...options,
-      headers,
+      ...(headers && { headers }),
       credentials: 'include'
     });
-
-    // Проверка 401 - перенаправить на вход
-    if (response.status === 401) {
-      window.location.href = '/auth';
-      throw new Error('Сессия истекла');
-    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -189,6 +186,11 @@ export const managerAPI = {
     apiFetch(`/manager/services/${serviceId}`, {
       method: 'DELETE'
     }),
+
+  approvePayment: (paymentId) =>
+    apiFetch(`/manager/payments/${paymentId}/approve`, {
+      method: 'PATCH'
+    }),
 };
 
 // ============= TEAMS =============
@@ -223,7 +225,7 @@ export const teamsAPI = {
       body: JSON.stringify({ status_id: statusId })
     }),
 
-  getTeamFinance: () => apiFetch('/teams/finance'),
+  getTeamFinance: (period = 'all') => apiFetch(`/teams/finance?period=${period}`),
 };
 
 // ============= SERVICES =============

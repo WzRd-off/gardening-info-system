@@ -77,19 +77,30 @@ export default function ServicesTab() {
       return;
     }
 
+    // Для створення нової послуги - файл обов'язковий
+    if (modal === 'add' && !form.image) {
+      setError('Зображення обов\'язкове для нової послуги');
+      return;
+    }
+
     setSaving(true);
     setError('');
     try {
       const formData = new FormData();
       formData.append('name', form.name);
-      formData.append('description', form.description);
+      formData.append('description', form.description || '');
       formData.append('price', form.price.replace(',', '.'));
       formData.append('category', form.category);
-      if (form.image) formData.append('upload_file', form.image);
+      
+      // Для створення - файл обов'язковий, для редагування - опціональний
+      if (form.image) {
+        formData.append('upload_file', form.image);
+      }
 
       if (modal === 'edit') {
         await managerAPI.updateService(selected.id, formData);
       } else {
+        // Для створення файл обов'язковий (вже перевірили вище)
         await managerAPI.createService(formData);
       }
       setModal(false);
@@ -199,7 +210,7 @@ export default function ServicesTab() {
             <Field label="Ціна (₴) *" hint="Тільки цифри та кома">
               <input className="mgr-input" value={form.price} onChange={e => setForm(p => ({ ...p, price: validatePrice(e.target.value) }))} placeholder="1200" />
             </Field>
-            <Field label="Зображення" hint={modal === 'edit' ? 'Залиште порожнім, щоб не змінювати фото' : ''}>
+            <Field label={modal === 'add' ? 'Зображення *' : 'Зображення'} hint={modal === 'edit' ? 'Залиште порожнім, щоб не змінювати фото' : 'Обов\'язкове для нової послуги'}>
               <div className="mgr-file-row">
                 <input ref={fileRef} type="file" accept="image/*" className="mgr-file-input" onChange={e => setForm(p => ({ ...p, image: e.target.files[0] || null }))} />
                 <button type="button" className="mgr-button mgr-button--outlined" onClick={() => fileRef.current.click()}>Обрати файл</button>

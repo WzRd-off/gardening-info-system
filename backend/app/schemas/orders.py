@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 from decimal import Decimal
+from app.schemas.payments import PaymentOut
 
 # ─── Short schemas for nested responses ───────────────────────────────────────
 
@@ -69,6 +70,7 @@ class OrderResponse(BaseModel):
     id: int
     user: UserShortSchema
     team_id: Optional[int] = None
+    status_id: int
     status: OrderStatusShortSchema
     plot: PlotShortSchema
     service: ServiceShortSchema
@@ -78,6 +80,7 @@ class OrderResponse(BaseModel):
     regularity: Optional[str] = None
     total_price: Optional[float] = None
     created_at: datetime
+    payments: list[PaymentOut] = []
     scheduled_date: Optional[datetime] = None
     schedule_id: Optional[int] = None
 

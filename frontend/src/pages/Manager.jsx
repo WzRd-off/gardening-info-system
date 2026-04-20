@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { Icon } from '../constants/Icons';
 import ServicesTab from '../components/manager/ServicesTab';
 import OrdersTab from '../components/manager/OrdersTab';
@@ -16,15 +17,10 @@ const TABS = [
 export default function ManagerPage() {
   const [activeTab, setActiveTab] = useState('orders');
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!localStorage.getItem('jwt')) {
-      navigate('/auth');
-    }
-  }, [navigate]);
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('jwt');
+    logout();
     navigate('/auth');
   };
 

@@ -9,7 +9,7 @@ from app.utils.generator_jwt import SECRET_KEY, ALGORITHM
 from app.models.users import Users
 from app.models.roles import Roles
 
-def get_token_from_cookie(access_token: str = Cookie(None)):
+def get_token_from_cookie(access_token: str = Cookie(default=None)):
     """
     Отримати JWT токен з HttpOnly cookie
     """

@@ -16,6 +16,7 @@ export default function OrdersTab() {
   const [dateValue, setDateValue] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [approvingPaymentId, setApprovingPaymentId] = useState(null);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -68,6 +69,19 @@ export default function OrdersTab() {
       setError(e.message || 'Помилка');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const approvePayment = async (paymentId) => {
+    setApprovingPaymentId(paymentId);
+    try {
+      await managerAPI.approvePayment(paymentId);
+      await fetchAll();
+      setError('');
+    } catch (e) {
+      setError(e.message || 'Помилка підтвердження платежу');
+    } finally {
+      setApprovingPaymentId(null);
     }
   };
 
@@ -139,6 +153,20 @@ export default function OrdersTab() {
                 </select>
                 <button type="button" className="mgr-button mgr-button--outlined mgr-button--small" onClick={() => { setInstrModal(order); setInstrText(order.manager_instructions || ''); }}>{Icon.note} Інструкції</button>
                 <button type="button" className="mgr-button mgr-button--outlined mgr-button--small" onClick={() => { setDateModal(order); setDateValue(order.scheduled_date?.slice(0, 10) || ''); }}>{Icon.calendar} Дата</button>
+                {/* Кнопка розрахунку - видна якщо замовлення виконано і є платіж з статусом pending */}
+                {order.status_id === 4 && order.payments?.length > 0 && order.payments.some(p => p.status === 'pending') && (
+                  <button 
+                    type="button" 
+                    className="mgr-button mgr-button--success mgr-button--small" 
+                    onClick={() => {
+                      const pendingPayment = order.payments.find(p => p.status === 'pending');
+                      if (pendingPayment) approvePayment(pendingPayment.id);
+                    }}
+                    disabled={approvingPaymentId === order.payments.find(p => p.status === 'pending')?.id}
+                  >
+                    {approvingPaymentId === order.payments.find(p => p.status === 'pending')?.id ? 'Розраховується...' : '✓ Розрахуватися'}
+                  </button>
+                )}
               </div>
             </div>
           ))}

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select, cast, Date
+from sqlalchemy import select, cast, Date, func
 from typing import List, Optional, Annotated
 from decimal import Decimal
 from pathlib import Path
@@ -17,6 +17,7 @@ from app.models.users import Users
 from app.models.orders import Orders
 from app.models.services import Services
 from app.models.schedules import Schedules
+from app.models.payments import Payments
 
 from app.schemas.orders import OrderUpdate, OrderOut, OrderResponse
 from app.schemas.services import ServiceRead
@@ -205,7 +206,8 @@ def get_all_orders(
             joinedload(Orders.status),
             joinedload(Orders.plot),
             joinedload(Orders.service),
-            joinedload(Orders.schedules)
+            joinedload(Orders.schedules),
+            joinedload(Orders.payments)
         )
         .where(*filters)
     ).unique().scalars().all()        
@@ -255,8 +257,7 @@ def update_order_by_manager(
 @router.post("/schedules", status_code=status.HTTP_201_CREATED)
 def manage_schedule(
     schedule_data: ScheduleCreate, 
-    db: Session = Depends(get_db),
-    current_manager: Users = Depends(get_current_manager)
+    db: Session = Depends(get_db)
     ):
     """
     Додавання замовлення в розклад АБО перенесення дати (якщо розклад вже існує).
@@ -386,3 +387,40 @@ def assign_user_to_team(
     db.commit()
     
     return {"status": "success", "message": f"Користувача успішно додано до бригади {team_id}"}
+
+@router.patch("/payments/{payment_id}/approve")
+def approve_payment(
+    payment_id: int,
+    db: Session = Depends(get_db),
+    current_manager: Users = Depends(get_current_manager)
+):
+    """
+    Менеджер схвалює платіж (змінює статус з 'pending' на 'paid').
+    Використовується для розрахунків з бригадами за виконані замовлення.
+    """
+    stmt = select(Payments).where(Payments.id == payment_id)
+    payment = db.execute(stmt).scalars().first()
+    
+    if not payment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Платіж не знайдено"
+        )
+    
+    if payment.status == 'paid':
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Цей платіж вже оплачено"
+        )
+    
+    payment.status = 'paid'
+    db.commit()
+    db.refresh(payment)
+    
+    return JSONResponse(status_code=status.HTTP_200_OK, content={
+        'status': 'success', 
+        'message': f'Платіж на суму {float(payment.amount)} ₴ схвалено',
+        'payment_id': payment.id,
+        'amount': float(payment.amount),
+        'status': payment.status
+    })

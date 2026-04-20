@@ -4,24 +4,33 @@ import { Spinner } from './Spinner';
 import { teamsAPI } from '../../services/api';
 
 const MONTHLY_TARGET = 20;
+const PERIODS = [
+  { value: 'week', label: 'Цей тиждень' },
+  { value: 'month', label: 'Цей місяць' },
+  { value: 'all', label: 'Весь час' }
+];
 
 export function FinanceTab() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [period, setPeriod] = useState('month');
+
+  const fetchFinance = async (selectedPeriod) => {
+    setLoading(true);
+    try {
+      const d = await teamsAPI.getTeamFinance(selectedPeriod);
+      setData(d);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    (async () => {
-      try {
-        const d = await teamsAPI.getTeamFinance();
-        setData(d);
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    fetchFinance(period);
+  }, [period]);
 
   if (loading) return <Spinner />;
   if (error) return (
@@ -33,18 +42,39 @@ export function FinanceTab() {
 
   const totalEarned = data.total_earned ?? data.earned ?? 0;
   const completedCount = data.completed_orders_count ?? data.completed_orders ?? data.count ?? 0;
+  const pendingCount = data.pending_payments_count ?? 0;
   const transactions = data.payments ?? data.transactions ?? data.history ?? [];
   const progress = Math.min(Math.round((completedCount / MONTHLY_TARGET) * 100), 100);
 
   const paymentStatus = (p) => {
     const s = (p.status ?? '').toLowerCase();
-    if (s.includes('оплач')) return { label: 'Оплачено', color: '#007D00', bg: '#E3F0DB' };
-    if (s.includes('очік')) return { label: 'Очікує виплати', color: '#FF9800', bg: '#FFF3E0' };
+    if (s.includes('paid') || s.includes('оплач')) return { label: 'Оплачено', color: '#007D00', bg: '#E3F0DB' };
+    if (s.includes('pending') || s.includes('очік')) return { label: 'Очікує виплати', color: '#FF9800', bg: '#FFF3E0' };
     return { label: p.status ?? '—', color: '#616161', bg: '#F5F5F5' };
   };
 
   return (
     <div className="team-finance-container">
+      {/* Выбор периода */}
+      <div className="team-finance-period-selector" style={{ marginBottom: '20px' }}>
+        <label style={{ fontWeight: '500', marginRight: '10px' }}>Період:</label>
+        <select 
+          value={period} 
+          onChange={e => setPeriod(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            borderRadius: '6px',
+            border: '1px solid #ddd',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          {PERIODS.map(p => (
+            <option key={p.value} value={p.value}>{p.label}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Main earnings card */}
       <div className="team-finance-card">
         <div className="team-finance-card-bg1" />
@@ -56,10 +86,16 @@ export function FinanceTab() {
             <p className="team-finance-card-stat-value">{completedCount}</p>
             <p className="team-finance-card-stat-label">Виконано замовлень</p>
           </div>
+          {pendingCount > 0 && (
+            <div>
+              <p className="team-finance-card-stat-value" style={{ color: '#FF9800' }}>{pendingCount}</p>
+              <p className="team-finance-card-stat-label">Очікує виплати</p>
+            </div>
+          )}
           {transactions.length > 0 && (
             <div>
               <p className="team-finance-card-stat-value">{transactions.length}</p>
-              <p className="team-finance-card-stat-label">Транзакцій</p>
+              <p className="team-finance-card-stat-label">Оплачено</p>
             </div>
           )}
         </div>

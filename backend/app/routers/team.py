@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select, func
 from typing import List
+from datetime import datetime, timedelta, timezone
 
 from app.utils.database import get_db
 from app.utils.security import get_current_team, get_current_manager
@@ -89,12 +90,15 @@ def update_order_status(
         existing_payment = db.execute(stmt_payment).scalars().first()
         if order.total_price:
             if existing_payment:
+                # Якщо платіж вже існує, просто оновлюємо суму
                 existing_payment.amount = order.total_price
             else:
+                # Створюємо новий платіж зі статусом 'pending' (очікує виплати)
                 new_payment = Payments(
                     order_id=order.id,
                     amount=order.total_price,
-                    team_id=order.team_id
+                    team_id=order.team_id,
+                    status='pending'
                 )
                 db.add(new_payment)
 
@@ -104,23 +108,63 @@ def update_order_status(
 
 # Отримати історію виплат
 @router.get("/finance")
-def get_team_finance(db: Session = Depends(get_db), current_user: Users = Depends(get_current_team)):
+def get_team_finance(
+    db: Session = Depends(get_db), 
+    current_user: Users = Depends(get_current_team),
+    period: str = 'all'  # 'week', 'month', 'all'
+):
     if not current_user.team_id:
         raise HTTPException(status_code=403, detail="Ви не належите до бригади")
 
-    stmt_payments = select(Payments).where(Payments.team_id == current_user.team_id)
+    # Визначаємо дату від якої шукати
+    today = datetime.now(timezone.utc)
+    
+    if period == 'week':
+        # З початку цього тижня (понеділок)
+        start_date = today - timedelta(days=today.weekday())
+    elif period == 'month':
+        # З початку цього місяця
+        start_date = today.replace(day=1)
+    else:  # 'all'
+        start_date = None
+
+    # Запит для оплачених платежів за період
+    stmt_payments = select(Payments).where(Payments.team_id == current_user.team_id, Payments.status == 'paid')
+    if start_date:
+        stmt_payments = stmt_payments.where(Payments.payment_date >= start_date)
+    
     history = db.execute(stmt_payments).scalars().all()
     
-    stmt_total = select(func.sum(Payments.amount)).where(Payments.team_id == current_user.team_id)
+    # Всього заробленого (оплачено)
+    stmt_total = select(func.sum(Payments.amount)).where(
+        Payments.team_id == current_user.team_id, 
+        Payments.status == 'paid'
+    )
+    if start_date:
+        stmt_total = stmt_total.where(Payments.payment_date >= start_date)
+    
     total_amount = db.execute(stmt_total).scalar() or 0.0
     
-    stmt_count = select(func.count()).select_from(Orders).where(Orders.team_id == current_user.team_id, Orders.status_id == 4)
+    # Кількість виконаних замовлень
+    stmt_count = select(func.count()).select_from(Orders).where(
+        Orders.team_id == current_user.team_id, 
+        Orders.status_id == 4
+    )
     completed_orders_count = db.execute(stmt_count).scalar()
+    
+    # Кількість очікуючих виплат
+    stmt_pending = select(func.count()).select_from(Payments).where(
+        Payments.team_id == current_user.team_id,
+        Payments.status == 'pending'
+    )
+    pending_count = db.execute(stmt_pending).scalar()
 
     return {
         "team_id": current_user.team_id,
+        "period": period,
         "total_earned": float(total_amount),
         "completed_orders_count": completed_orders_count,
+        "pending_payments_count": pending_count,
         "payments": [
             {
                 "payment_id": p.id,
@@ -129,7 +173,7 @@ def get_team_finance(db: Session = Depends(get_db), current_user: Users = Depend
                 "amount": float(p.amount),
                 "date": p.payment_date,
                 "payment_date": p.payment_date,
-                "status": "оплачено"
+                "status": p.status
             } for p in history
         ]
     }
