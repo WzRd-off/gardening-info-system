@@ -70,7 +70,7 @@ export default function TeamsTab() {
     setSaving(true);
     setError('');
     try {
-      await teamsAPI.createTeam(newTeam.name, newTeam.email);
+      await teamsAPI.createTeam(newTeam);
       setShowCreate(false);
       setNewTeam({ name: '', email: '' });
       await fetchAll();

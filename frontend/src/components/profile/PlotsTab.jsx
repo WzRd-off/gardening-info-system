@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Spinner, EmptyState, Field } from './CommonComponents';
 import { PlotCard } from './PlotCard';
-import * as profileService from '../../services/profileService';
+import {profileAPI} from '../../services/api';
 
 export function PlotsTab() {
   const [plots, setPlots] = useState([]);
@@ -14,7 +14,7 @@ export function PlotsTab() {
   const fetchPlots = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await profileService.getMyPlots();
+      const data = await profileAPI.getMyPlots();
       setPlots(Array.isArray(data) ? data : []);
       setError('');
     } catch (err) { setError('Не вдалося завантажити ділянки'); }
@@ -27,7 +27,7 @@ export function PlotsTab() {
     if (!newPlot.address.trim() || !newPlot.area) return;
     setAddingPlot(true);
     try {
-      await profileService.addPlot(newPlot.address, parseFloat(newPlot.area), newPlot.features);
+      await profileAPI.addPlot(newPlot.address, parseFloat(newPlot.area), newPlot.features);
       setNewPlot({ address: '', area: '', features: '' });
       setShowAddPlot(false);
       await fetchPlots();

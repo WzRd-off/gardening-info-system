@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import * as profileService from '../../services/profileService';
+import {profileAPI} from '../../services/api';
 
 export function PlotCard({ plot, onRefresh }) {
   const [plants, setPlants] = useState([]);
@@ -11,7 +11,7 @@ export function PlotCard({ plot, onRefresh }) {
   const fetchPlants = useCallback(async () => {
     setLoadingPlants(true);
     try {
-      const data = await profileService.getPlantsOnPlot(plot.id);
+      const data = await profileAPI.getPlantsOnPlot(plot.id);
       setPlants(Array.isArray(data) ? data : []);
     } catch { }
     finally { setLoadingPlants(false); }
@@ -23,7 +23,7 @@ export function PlotCard({ plot, onRefresh }) {
     if (!newPlant.trim()) return;
     setAddingPlant(true);
     try {
-      await profileService.addPlantToPlot(plot.id, newPlant.trim());
+      await profileAPI.addPlantToPlot(plot.id, newPlant.trim());
       setNewPlant('');
       await fetchPlants();
     } catch { }
@@ -32,7 +32,7 @@ export function PlotCard({ plot, onRefresh }) {
 
   const handleDeletePlant = async (plantId) => {
     try {
-      await profileService.deletePlantFromPlot(plot.id, plantId);
+      await profileAPI.deletePlantFromPlot(plot.id, plantId);
       await fetchPlants();
     } catch { }
   };

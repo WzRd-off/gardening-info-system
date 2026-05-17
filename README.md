@@ -1,370 +1,299 @@
-# 🌱 Gardening Info System
+# 🌿 Gardening Services Management Platform
 
-Полнофункциональная система управления садовыми участками с поддержкой заказов, команд и платежей.
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-red)
+![JWT](https://img.shields.io/badge/Auth-JWT%20%2B%20RBAC-black)
 
-## 🚀 Стек технологий
+A full-stack **gardening services operations platform** that connects clients, field crews (foremen), and managers in one workflow—from catalog browsing and plot management to order fulfillment, scheduling, and team payouts.
 
-### Backend
-- **FastAPI** - современный Python фреймворк
-- **SQLAlchemy** - ORM для работы с БД
-- **JWT** - аутентификация с токенами
-- **Alembic** - миграции БД
-- **CORS** - поддержка кросс-доменных запросов
-
-### Frontend
-- **React** - библиотека UI
-- **Vite** - быстрый build tool
-- **ESLint** - проверка качества кода
-- **Modern JavaScript** - ES6+
+Built as a portfolio backend project demonstrating production-oriented API design, secure authentication, role-based authorization, and pragmatic database access patterns.
 
 ---
 
-## 📋 Структура проекта
+## 📖 Project Description
+
+Landscaping and gardening companies need more than a static website: they need to coordinate **who** requests a service, **which crew** executes it, and **how managers** assign work and track revenue.
+
+This platform delivers that operational layer:
+
+| Stakeholder | Business value |
+|-------------|----------------|
+| **Client** | Register plots, browse services, place and track orders |
+| **Foreman (Team)** | View assigned jobs, update execution status, monitor team earnings |
+| **Manager** | Manage service catalog, assign teams, schedule work, approve payments |
+
+The backend is the system of record: REST APIs, PostgreSQL persistence, and auto-generated OpenAPI docs. The React frontend provides role-specific dashboards on top of the same API.
+
+---
+
+## ✨ Core Features
+
+### 🔐 Role-Based Access Control (RBAC)
+
+Three distinct roles drive authorization across every protected route:
+
+| Role | Code name | Capabilities |
+|------|-----------|--------------|
+| **Client** | `Клієнт` | Profile, garden plots, plants, order history, create/cancel orders |
+| **Foreman** | `Бригада` | Team task board, order status updates, financial summaries |
+| **Manager** | `Менеджер` | Service CRUD, order assignment, schedules, team workload, payments |
+
+Access is enforced server-side via FastAPI dependencies (`get_current_user`, `get_current_manager`, `get_current_team`)—the API never relies on the UI alone for security.
+
+### 🛡️ Stateless JWT Authentication & Authorization
+
+- **JWT** signed with `HS256` and a configurable `SECRET_KEY`
+- Tokens delivered as **HttpOnly cookies** (mitigates XSS token theft)
+- `SameSite` cookie flags for CSRF hardening
+- Passwords hashed with **bcrypt** via Passlib
+- Registration defaults new users to the **Client** role
+
+### ⚡ Optimized Database Queries
+
+The data layer balances **SQLAlchemy 2.0 ORM** with targeted query patterns:
+
+- **`select()` + `db.execute()`** for lean, explicit reads (preferred over legacy Query API)
+- **`joinedload()`** on order endpoints to avoid N+1 queries when loading users, plots, services, statuses, schedules, and payments in one round trip
+- **`func.sum()` / `func.count()`** aggregations for foreman finance dashboards (earnings, completed jobs, pending payouts)
+- **`cast(..., Date)`** and joins for manager workload calculations per team and day
+
+Complex reads stay in SQLAlchemy Core/ORM expressiveness; hot paths avoid redundant round trips to PostgreSQL.
+
+### 📚 Auto-Generated API Documentation
+
+FastAPI exposes interactive **Swagger UI** and **ReDoc** from the OpenAPI schema—no manual sync between code and docs.
+
+### 🐳 Containerized Runtime
+
+**Docker Compose** orchestrates a multi-container stack:
+
+- `api` — FastAPI application (migrations on startup)
+- `db` — PostgreSQL 16 with persistent volume
+
+One command builds images, applies Alembic migrations, and starts the API on port `8000`.
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technologies |
+|-------|----------------|
+| **Backend** | Python 3.10+, FastAPI, Uvicorn, SQLAlchemy 2.0, Alembic, Pydantic |
+| **Database** | PostgreSQL 16 |
+| **Auth** | python-jose (JWT), Passlib/bcrypt, HttpOnly cookies |
+| **Frontend** | React 19, Vite 8, React Router 7 |
+| **DevOps** | Docker, Docker Compose |
+| **Tooling** | ESLint, Alembic migrations |
+
+---
+
+## 🗄️ Database Schema
+
+PostgreSQL stores the domain model. Key entities and relationships:
+
+```mermaid
+erDiagram
+    ROLES ||--o{ USERS : assigns
+    USERS ||--o{ GARDEN_PLOTS : owns
+    USERS ||--o{ ORDERS : places
+    TEAMS ||--o{ USERS : employs
+    TEAMS ||--o{ ORDERS : fulfills
+    SERVICES ||--o{ ORDERS : includes
+    GARDEN_PLOTS ||--o{ ORDERS : targets
+    ORDER_STATUSES ||--o{ ORDERS : tracks
+    ORDERS ||--o{ PAYMENTS : generates
+    ORDERS ||--o{ SCHEDULES : schedules
+    GARDEN_PLOTS ||--o{ PLANTS : contains
+```
+
+### Core tables
+
+| Entity | Purpose | Key fields |
+|--------|---------|------------|
+| **Users** | Accounts for all roles | `email`, `password_hash`, `role_id`, optional `team_id` |
+| **Roles** | RBAC definitions | `name` — Client, Manager, Foreman (Team) |
+| **Services** | Service catalog | `name`, `description`, `price`, `category`, `image_url` |
+| **Orders** | Work requests | `user_id`, `service_id`, `plot_id`, `team_id`, `status_id`, `total_price`, `execution_date` |
+| **GardenPlots** | Client properties | `address`, `area`, `features`, `user_id` |
+| **Teams** | Field crews | `name`, `leader_id`, `efficiency_rating` |
+| **OrderStatuses** | Workflow states | e.g. pending, in progress, completed |
+| **Schedules** | Manager planning | `order_id`, `scheduled_time` |
+| **Payments** | Crew compensation | `order_id`, `team_id`, `amount`, `status` |
+| **Plants** | Plot inventory | `plant_type`, `plot_id` |
+
+Schema changes are versioned with **Alembic** under `backend/alembic/versions/`.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Git](https://git-scm.com/)
+- [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/) v2+
+- **Python 3.10+** (optional, for local development without Docker)
+- **Node.js 18+** (optional, for running the React frontend locally)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/<your-username>/gardening-info-system.git
+cd gardening-info-system
+```
+
+### 2. Configure environment variables
+
+Copy the example env file and adjust secrets for your environment:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` — at minimum set a strong `SECRET_KEY`:
+
+```env
+POSTGRES_USER=garden_user
+POSTGRES_PASSWORD=garden_secret
+POSTGRES_DB=garden_db
+DATABASE_URL=postgresql://garden_user:garden_secret@db:5432/garden_db
+SECRET_KEY=your-long-random-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+```
+
+> **Production:** set `COOKIE_SECURE=true` and serve the API over HTTPS.
+
+### 3. Run with Docker Compose
+
+From the project root:
+
+```bash
+docker-compose up --build
+```
+
+| Service | URL |
+|---------|-----|
+| API | http://localhost:8000 |
+| Swagger UI | http://localhost:8000/docs |
+| ReDoc | http://localhost:8000/redoc |
+| PostgreSQL | `localhost:5432` |
+
+On first boot, the API container runs `alembic upgrade head` before starting Uvicorn.
+
+#### Seed roles & manager (first run)
+
+After migrations, insert baseline roles (`Клієнт`, `Менеджер`, `Бригада`) and optional manager account:
+
+```bash
+docker-compose exec api python init_manager.py
+```
+
+### 4. Run the frontend (optional)
+
+```bash
+cd frontend
+npm install
+# Create frontend/.env.local with: VITE_API_URL=http://localhost:8000
+npm run dev
+```
+
+Frontend dev server: **http://localhost:5173**
+
+### Local backend (without Docker)
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp ../.env.example .env            # point DATABASE_URL to your PostgreSQL instance
+alembic upgrade head
+uvicorn app.server:app --reload --host 0.0.0.0 --port 8000
+```
+
+---
+
+## 📘 API Documentation
+
+FastAPI generates OpenAPI 3 metadata automatically from route signatures, Pydantic schemas, and dependency injection.
+
+| Resource | URL |
+|----------|-----|
+| **Swagger UI** (try endpoints) | http://localhost:8000/docs |
+| **ReDoc** (readable reference) | http://localhost:8000/redoc |
+| **OpenAPI JSON** | http://localhost:8000/openapi.json |
+
+### Route groups
+
+| Prefix | Tag | Description |
+|--------|-----|-------------|
+| `/auth` | Authentication | Register, login, logout (JWT cookie) |
+| `/profile` | Profile | User profile, plots, plants, order history |
+| `/orders` | Orders | Catalog, CRUD, status updates |
+| `/manager` | Manager | Services, orders, schedules, workload, payments |
+| `/teams` | Teams | Crew tasks, finance aggregates |
+
+Authenticated requests must include credentials: the browser sends the `access_token` HttpOnly cookie after login (`credentials: 'include'` on the frontend).
+
+---
+
+## 🏗️ Architecture & Directory Structure
 
 ```
 gardening-info-system/
-├── backend/                    # FastAPI приложение
-│   ├── app/
-│   │   ├── routers/           # API маршруты
-│   │   │   ├── auth.py        # Аутентификация
-│   │   │   ├── profile.py     # Профиль пользователя
-│   │   │   ├── manager.py     # Менеджер
-│   │   │   ├── team.py        # Бригады
-│   │   │   └── order.py       # Заказы
-│   │   ├── models/            # SQLAlchemy модели
-│   │   ├── schemas/           # Pydantic схемы
-│   │   ├── utils/             # Утилиты
-│   │   └── server.py          # Конфиг FastAPI
-│   ├── alembic/               # Миграции БД
-│   └── images/                # Хранилище картинок
-├── frontend/                  # React приложение
-│   ├── src/
-│   │   ├── components/        # React компоненты
-│   │   ├── pages/             # Страницы
-│   │   ├── services/          # API сервисы
-│   │   ├── contexts/          # Context API
-│   │   └── constants/         # Константы
-│   ├── package.json
-│   └── vite.config.js
-└── README.md
+├── docker-compose.yml          # Multi-container orchestration (API + PostgreSQL)
+├── .env.example                # Environment variable template
+│
+├── backend/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── alembic/                # Database migrations
+│   │   └── versions/
+│   ├── init_manager.py         # Seed manager user
+│   ├── images/                 # Uploaded service images (static mount)
+│   └── app/
+│       ├── server.py           # FastAPI app, CORS, routers, static files
+│       ├── routers/            # HTTP layer (auth, profile, order, manager, team)
+│       ├── models/             # SQLAlchemy ORM entities
+│       ├── schemas/            # Pydantic request/response models
+│       └── utils/
+│           ├── database.py     # Engine, session, get_db
+│           ├── security.py     # JWT cookie auth + RBAC dependencies
+│           └── generator_jwt.py
+│
+└── frontend/
+    ├── src/
+    │   ├── pages/              # Auth, Main, Profile, Manager, Team, CreateOrder
+    │   ├── components/       # Role-specific UI (manager, profile, order, team)
+    │   ├── contexts/           # AuthContext (session state)
+    │   ├── services/           # API client (config, api.js)
+    │   └── hooks/              # useAuth
+    ├── package.json
+    └── vite.config.js
+```
+
+### Request flow
+
+```
+Client (React)  →  HTTP + HttpOnly Cookie  →  FastAPI Router
+                                              ↓
+                                    security.py (JWT + RBAC)
+                                              ↓
+                                    SQLAlchemy Session  →  PostgreSQL
 ```
 
 ---
 
-## 🔐 Миграция на HttpOnly Cookies
+## 👤 Author
 
-### ✅ Статус: ЗАВЕРШЕНА
-
-Система аутентификации успешно перенесена с `localStorage` на **HttpOnly cookies** для повышения безопасности.
-
-**Улучшения безопасности:**
-- 🛡️ Защита от XSS атак (JavaScript не может прочитать cookie)
-- 🔒 Автоматическое управление браузером
-- 🚀 Встроенная CSRF защита через SameSite флаг
-
-### Документация миграции:
-- [README_MIGRATION.md](README_MIGRATION.md) - Итоговый отчет
-- [START_HERE.md](START_HERE.md) - С чего начать
-- [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Быстрое руководство
+**Junior Backend Developer** — portfolio project showcasing API design, PostgreSQL modeling, JWT/RBAC security, and containerized deployment.
 
 ---
 
-## ⚙️ Запуск приложения
+## 📄 License
 
-### Backend
-
-```bash
-cd backend
-
-# Активировать виртуальное окружение
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/Mac
-
-# Установить зависимости
-pip install -r requirements.txt
-
-# Запустить сервер
-python -m uvicorn app.server:app --reload
-# Доступно на http://localhost:8000
-# API документация: http://localhost:8000/docs
-```
-
-### Frontend
-
-```bash
-cd frontend
-
-# Установить зависимости
-npm install
-
-# Запустить dev сервер
-npm run dev
-# Доступно на http://localhost:5173
-
-# Build для production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
----
-
-## 🧪 Тестирование
-
-### Быстрый тест
-
-```bash
-# Terminal 1: Backend
-cd backend
-python -m uvicorn app.server:app --reload
-
-# Terminal 2: Frontend
-cd frontend
-npm run dev
-
-# Terminal 3: API тесты
-# POST /auth/login
-curl -X POST http://localhost:8000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "password": "password"}' \
-  -c cookies.txt -v
-```
-
-### В браузере
-
-1. Открыть http://localhost:5173
-2. DevTools > Application > Cookies
-3. Войти в систему
-4. Проверить что `access_token` имеет флаг `HttpOnly` ✓
-5. F5 (перезагрузить) - авторизация должна сохраниться ✓
-
----
-
-## 🔑 Переменные окружения
-
-### Backend
-
-Создайте файл `backend/.env`:
-
-```env
-# Database
-DATABASE_URL=sqlite:///./database.db
-
-# JWT
-SECRET_KEY=your-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=1440
-
-# Cookie settings
-COOKIE_SECURE=false
-COOKIE_SAMESITE=lax
-```
-
-### Frontend
-
-Создайте файл `frontend/.env.local`:
-
-```env
-VITE_API_URL=http://localhost:8000
-```
-
----
-
-## 📚 API Endpoints
-
-### Аутентификация
-- `POST /auth/login` - Вход пользователя
-- `POST /auth/reg` - Регистрация
-- `POST /auth/logout` - Выход
-
-### Профиль
-- `GET /profile/my_profile` - Мой профиль
-- `PUT /profile/update_profile` - Обновить профиль
-- `PUT /profile/change-password` - Изменить пароль
-
-### Заказы
-- `GET /orders/` - Все заказы
-- `GET /orders/my_orders` - Мои заказы
-- `POST /orders/` - Создать заказ
-
-### Команды
-- `GET /teams/` - Все команды
-- `POST /teams/` - Создать команду
-- `GET /teams/orders` - Заказы команды
-
-### Менеджер
-- `GET /manager/orders` - Управление заказами
-- `GET /manager/services` - Услуги
-- `GET /manager/schedules` - Расписание
-
-### Услуги
-- `GET /services/` - Все услуги
-
-### Платежи
-- `GET /payments/team` - Платежи команды
-- `GET /payments/` - Все платежи
-
-Полная документация: http://localhost:8000/docs (Swagger UI)
-
----
-
-## 🛠️ Разработка
-
-### Структура Branch'ей
-- `main` - Production
-- `develop` - Development
-- `feature/*` - Новые функции
-
-### Commit сообщения
-```
-[FEATURE] Добавлена поддержка cookies
-[FIX] Исправлена ошибка в auth
-[DOCS] Обновлена документация
-```
-
----
-
-## 🔒 Безопасность
-
-### Текущая защита
-- ✅ JWT токены с подписью
-- ✅ HttpOnly cookies (XSS защита)
-- ✅ SameSite флаги (CSRF защита)
-- ✅ Хеширование паролей (bcrypt)
-- ✅ CORS конфигурация
-- ✅ Валидация данных (Pydantic)
-
-### Recommendations
-- Всегда использовать HTTPS в production
-- Регулярно обновлять зависимости
-- Использовать environment переменные для secrets
-- Проводить security аудит регулярно
-
----
-
-## 📊 Database
-
-### Миграции
-
-```bash
-cd backend
-
-# Создать новую миграцию
-alembic revision --autogenerate -m "Описание миграции"
-
-# Применить миграции
-alembic upgrade head
-
-# Откатить миграцию
-alembic downgrade -1
-```
-
-### Модели
-- Users - Пользователи
-- Roles - Роли (Клієнт, Менеджер, Бригада)
-- GardenPlots - Участки сада
-- Plants - Растения
-- Orders - Заказы
-- OrderStatus - Статусы заказов
-- Services - Услуги
-- Teams - Команды
-- Payments - Платежи
-- Schedules - Расписание
-
----
-
-## 🚀 Production Deploy
-
-### Pre-deployment Checklist
-
-```bash
-# Backend
-[ ] Установить COOKIE_SECURE=true
-[ ] Установить COOKIE_SAMESITE=strict
-[ ] Обновить CORS домены
-[ ] Обновить SECRET_KEY
-[ ] Проверить DATABASE_URL
-[ ] Запустить tests
-[ ] Проверить логи
-
-# Frontend
-[ ] npm run build
-[ ] Проверить bundle size
-[ ] Обновить VITE_API_URL
-[ ] Проверить environment variables
-[ ] Протестировать все routes
-```
-
-### Deploy Commands
-
-```bash
-# Backend (Docker)
-docker build -t gardening-api .
-docker run -p 8000:8000 --env-file .env gardening-api
-
-# Frontend (Nginx)
-npm run build
-# Deploy dist/ folder to web server
-```
-
----
-
-## 🐛 Troubleshooting
-
-### Backend не запускается
-```bash
-# Проверить зависимости
-pip install -r requirements.txt
-
-# Проверить БД
-alembic upgrade head
-
-# Проверить конфиг
-cat .env
-```
-
-### Frontend ошибки
-```bash
-# Очистить кеш
-rm -rf node_modules package-lock.json
-npm install
-
-# Проверить версию Node
-node --version  # Нужна 16+
-```
-
-### Cookie не сохраняется
-1. Проверить что backend возвращает Set-Cookie header
-2. Проверить что frontend использует `credentials: 'include'`
-3. Проверить DevTools > Application > Cookies
-
----
-
-## 📞 Контакты и поддержка
-
-Для вопросов или предложений создавайте Issues на GitHub.
-
----
-
-## 📄 Лицензия
-
-Проект распространяется под лицензией MIT.
-
----
-
-## 🎯 Дорожная карта
-
-- [ ] Двухфакторная аутентификация
-- [ ] Refresh token механизм
-- [ ] Улучшенный поиск и фильтрация
-- [ ] Экспорт отчетов (PDF, Excel)
-- [ ] Mobile приложение
-- [ ] Real-time уведомления
-- [ ] Integration с платежными системами
-
----
-
-**Последнее обновление:** 2026-04-19  
-**Версия:** 2.0 (HttpOnly Cookies Ready)  
-**Статус:** ✅ Production Ready
+This project is licensed under the **MIT License**.

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Field } from './CommonComponents';
-import * as profileService from '../../services/profileService';
+import {profileAPI} from '../../services/api';
 
 export function ChangePasswordTab() {
   const [oldPassword, setOldPassword] = useState('');
@@ -38,7 +38,7 @@ export function ChangePasswordTab() {
     setSuccess(false);
 
     try {
-      await profileService.changePassword(oldPassword, newPassword);
+      await profileAPI.changePassword(oldPassword, newPassword);
       setSuccess(true);
       setOldPassword('');
       setNewPassword('');

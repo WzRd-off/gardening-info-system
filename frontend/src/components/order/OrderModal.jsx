@@ -150,7 +150,7 @@ export default function OrderModal({ service, onClose, onSuccess }) {
               {/* 2. Послуга */}
               <FormSection icon={Icons.tag} label="Оберіть послугу">
                 <div className="om-radio-list">
-                  {services.map(s => (
+                  {(service ? services.filter(s => s.id === service.id) : services).map(s => (
                     <label
                       key={s.id}
                       className={`om-radio-item${selectedService?.id === s.id ? ' om-radio-item--active' : ''}`}

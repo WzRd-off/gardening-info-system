@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Field } from './CommonComponents';
 import { Spinner } from './CommonComponents';
 import { useAuth } from '../../hooks/useAuth';
-import * as profileService from '../../services/profileService';
+import {profileAPI} from '../../services/api';
 
 export function ProfileTab() {
   const { user, isLoading: authLoading } = useAuth();
@@ -23,7 +23,7 @@ export function ProfileTab() {
   const handleSave = async () => {
     setSaving(true); setError(''); setSaved(false);
     try {
-      await profileService.updateProfile({ username: form.username, phone: form.phone });
+      await profileAPI.updateProfile({ username: form.username, phone: form.phone });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e) { setError(e.message); }
