@@ -9,11 +9,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 IMAGES_DIR = os.path.join(os.path.dirname(BASE_DIR), "images")
 
+ORIGIN = os.getenv("ORIGIN")
+
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware, 
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[ORIGIN],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
