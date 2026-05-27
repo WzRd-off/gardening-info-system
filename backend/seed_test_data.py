@@ -88,21 +88,21 @@ def seed() -> None:
         manager = get_or_create_user(
             db,
             username="Manager Test",
-            email="manager.test@garden.local",
+            email="manager.test@example.com",
             role_id=manager_role.id,
             phone="+380500000001",
         )
         team_leader = get_or_create_user(
             db,
             username="Foreman Test",
-            email="foreman.test@garden.local",
+            email="foreman.test@example.com",
             role_id=team_role.id,
             phone="+380500000002",
         )
         client = get_or_create_user(
             db,
             username="Client Test",
-            email="client.test@garden.local",
+            email="client.test@example.com",
             role_id=client_role.id,
             phone="+380500000003",
         )
@@ -220,9 +220,9 @@ def seed() -> None:
         db.commit()
 
         print("Seed completed.")
-        print("manager.test@garden.local / Password123!")
-        print("foreman.test@garden.local / Password123!")
-        print("client.test@garden.local / Password123!")
+        print("manager.test@example.com / Password123!")
+        print("foreman.test@example.com / Password123!")
+        print("client.test@example.com / Password123!")
     except Exception:
         db.rollback()
         raise
