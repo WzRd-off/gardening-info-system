@@ -1,12 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { authAPI, profileAPI } from '../services/api';
 
-/**
- * Базова URL-адреса API. 
- * Визначена локально, щоб уникнути помилок імпорту в поточному середовищі.
- */
-const API_BASE_URL = 'http://localhost:8000';
-
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
