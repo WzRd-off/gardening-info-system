@@ -85,7 +85,7 @@ async def auth_user(auth_data: UserLogin, db: Session = Depends(get_db)):
         value=access_token,
         httponly=True,
         secure=True,  # Встановити True для production (HTTPS)
-        samesite="lax",
+        samesite=None,
         max_age=1440 * 60  # 1 день в секундах
     )
     
