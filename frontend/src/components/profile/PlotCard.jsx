@@ -23,7 +23,7 @@ export function PlotCard({ plot, onRefresh }) {
     if (!newPlant.trim()) return;
     setAddingPlant(true);
     try {
-      await profileAPI.addPlantToPlot(plot.id, newPlant.trim());
+      await profileAPI.addPlantToPlot(plot.id, { name: newPlant.trim() });
       setNewPlant('');
       await fetchPlants();
     } catch { }

@@ -27,7 +27,11 @@ export function PlotsTab() {
     if (!newPlot.address.trim() || !newPlot.area) return;
     setAddingPlot(true);
     try {
-      await profileAPI.addPlot(newPlot.address, parseFloat(newPlot.area), newPlot.features);
+      await profileAPI.addPlot({
+        address: newPlot.address,
+        area: parseFloat(newPlot.area),
+        features: newPlot.features,
+      });
       setNewPlot({ address: '', area: '', features: '' });
       setShowAddPlot(false);
       await fetchPlots();
